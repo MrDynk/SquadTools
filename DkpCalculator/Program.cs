@@ -55,7 +55,7 @@ using SquadSheets;
             CombatantInfo = new List<Tuple<DateTime, string>>(),
             Deaths = new List<Tuple<DateTime, string>>(),
             Loot = new List<Loot>(),
-             SquadPlayers = new List<Player>()
+            SquadPlayers = new List<Player>()
         };
 
         // Initialize repositories and calculator
@@ -73,16 +73,6 @@ using SquadSheets;
 //Build Valid Squad Players List and associate timestamps
 foreach (var logCombatant in squadSheetContext.CombatantInfo)
 {
-    /*  var matchingSquadEntry = squadSheetContext.SquadSheetPlayerRoster
-    .FirstOrDefault(s => s.Item2.Contains(logCombatant.Item2, StringComparison.OrdinalIgnoreCase));
-   
-
-    if (matchingSquadEntry == null)
-    {
-        Console.WriteLine($"Player in log not found in squad sheet: {combatantName}");
-        continue;
-    }
-     */
     var combatantName = logCombatant.Item2;
     var player = squadSheetContext.SquadPlayers
         .FirstOrDefault(p => p.PlayerAliases.Contains(combatantName));
@@ -114,9 +104,39 @@ foreach (var item in squadSheetContext.Loot)
             continue;
         }
         player.FatLoot.Add(item);
-}        
+}
 
 //output players detected in raid, their timestamps and loot
+
+/* EXAMPLE:
+===================================
+Alias: Sharkblood, Timestamps: 22:03:49, 22:05:15, 22:09:37, 22:14:53, 22:28:26, 22:29:13
+Alias: Sharkdog, Timestamps: 20:37:13, 20:39:38, 20:47:34, 20:50:31, 20:54:48, 21:08:09, 21:11:18, 21:14:16, 21:18:53, 21:46:11, 21:47:20
+Total DKP: 124
+Loot:
+  Time: 9/5/2025 9:17:38 PM, Item: Qiraji Lord's Insignia
+  Time: 9/5/2025 9:20:37 PM, Item: Heavy Silithid Husk
+  Time: 9/5/2025 9:22:03 PM, Item: Ancient Qiraji Artifact
+  Time: 9/5/2025 9:27:36 PM, Item: Qiraji Lord's Insignia
+  Time: 9/5/2025 9:28:36 PM, Item: Ancient Qiraji Artifact
+  Time: 9/5/2025 9:28:38 PM, Item: Ancient Qiraji Artifact
+  Time: 9/5/2025 9:29:47 PM, Item: Ancient Qiraji Artifact
+  Time: 9/5/2025 9:30:43 PM, Item: Ancient Qiraji Artifact
+  Time: 9/5/2025 9:33:26 PM, Item: Ancient Qiraji Artifact
+  Time: 9/5/2025 9:37:12 PM, Item: Qiraji Lord's Insignia
+  Time: 9/5/2025 9:43:40 PM, Item: Qiraji Lord's Insignia
+  Time: 9/5/2025 9:46:09 PM, Item: Barb of the Sand Reaver
+  Time: 9/5/2025 9:51:40 PM, Item: Qiraji Lord's Insignia
+  Time: 9/5/2025 9:56:01 PM, Item: Bronze Scarab
+  Time: 9/5/2025 9:57:38 PM, Item: Heavy Silithid Husk
+  Time: 9/5/2025 10:01:48 PM, Item: Qiraji Lord's Insignia
+  Time: 9/5/2025 10:39:16 PM, Item: Qiraji Lord's Insignia
+  Time: 9/5/2025 10:39:34 PM, Item: Qiraji Lord's Insignia
+  Time: 9/5/2025 10:42:59 PM, Item: Vek'lor's Gloves of Devastation
+  Time: 9/5/2025 10:57:32 PM, Item: Qiraji Lord's Insignia
+
+===================================
+*/
 foreach (var player in squadSheetContext.SquadPlayers)
 {
     Console.WriteLine("===================================");
@@ -136,26 +156,11 @@ foreach (var player in squadSheetContext.SquadPlayers)
     Console.WriteLine();
 }
 
+//todo: implement dkp calculation
+dkpCalculator.CalculateDkp(squadSheetContext);
 
-
-/*
-DATA RETRIEVAL
-*/
-//LogRepository(log loc)
-//.GetPriliminaryDataPoints: read zone_info, combatant_info, dies, loot from log file keep timestamps
-
-//SquadSheetRepository(file loc, start time, end time)
-//.GetPlayerList:  read playerlist from dkp sheet
-
-//report any found players not present in dkp sheet and remove them from context
-
-//LogRepository.GetPlayerActivity log timestamps for squad players
-
-//DKPCalculator
-// CalculateDKP(context)
-
-
-//SquadsheetRepository.UpdateDKP(context)
+//todo: update DKP in squadsheet
+squadSheetRepository.UpdateDkp(squadSheetContext);
 
 
 
