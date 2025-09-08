@@ -1,8 +1,25 @@
 {
   "version": 2,
-  "dgSpecHash": "vK2O+nsLwPY=",
+  "dgSpecHash": "8tHY6f+GXq0=",
   "success": true,
   "projectFilePath": "C:\\Users\\adamp\\SquadTools\\DkpCalculator\\DkpCalculator.csproj",
-  "expectedPackageFiles": [],
-  "logs": []
+  "expectedPackageFiles": [
+    "C:\\Users\\adamp\\.nuget\\packages\\icsharpcode.sharpziplib.dll\\0.85.4.369\\icsharpcode.sharpziplib.dll.0.85.4.369.nupkg.sha512",
+    "C:\\Users\\adamp\\.nuget\\packages\\odsreaderwriter\\1.0.14\\odsreaderwriter.1.0.14.nupkg.sha512",
+    "C:\\Users\\adamp\\.nuget\\packages\\system.text.encoding.codepages\\9.0.4\\system.text.encoding.codepages.9.0.4.nupkg.sha512"
+  ],
+  "logs": [
+    {
+      "code": "NU1701",
+      "level": "Warning",
+      "message": "Package 'ICSharpCode.SharpZipLib.dll 0.85.4.369' was restored using '.NETFramework,Version=v4.6.1, .NETFramework,Version=v4.6.2, .NETFramework,Version=v4.7, .NETFramework,Version=v4.7.1, .NETFramework,Version=v4.7.2, .NETFramework,Version=v4.8, .NETFramework,Version=v4.8.1' instead of the project target framework 'net9.0'. This package may not be fully compatible with your project.",
+      "projectPath": "C:\\Users\\adamp\\SquadTools\\DkpCalculator\\DkpCalculator.csproj",
+      "warningLevel": 1,
+      "filePath": "C:\\Users\\adamp\\SquadTools\\DkpCalculator\\DkpCalculator.csproj",
+      "libraryId": "ICSharpCode.SharpZipLib.dll",
+      "targetGraphs": [
+        "net9.0"
+      ]
+    }
+  ]
 }

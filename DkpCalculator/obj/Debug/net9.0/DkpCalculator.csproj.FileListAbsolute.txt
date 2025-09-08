@@ -13,3 +13,7 @@ C:\Users\adamp\SquadTools\DkpCalculator\obj\Debug\net9.0\refint\DkpCalculator.dl
 C:\Users\adamp\SquadTools\DkpCalculator\obj\Debug\net9.0\DkpCalculator.pdb
 C:\Users\adamp\SquadTools\DkpCalculator\obj\Debug\net9.0\DkpCalculator.genruntimeconfig.cache
 C:\Users\adamp\SquadTools\DkpCalculator\obj\Debug\net9.0\ref\DkpCalculator.dll
+C:\Users\adamp\SquadTools\DkpCalculator\bin\Debug\net9.0\ICSharpCode.SharpZipLib.dll
+C:\Users\adamp\SquadTools\DkpCalculator\bin\Debug\net9.0\OdsReaderWriter.dll
+C:\Users\adamp\SquadTools\DkpCalculator\obj\Debug\net9.0\DkpCalculator.csproj.AssemblyReference.cache
+C:\Users\adamp\SquadTools\DkpCalculator\obj\Debug\net9.0\DkpCalcu.B176353E.Up2Date

@@ -1,11 +1,152 @@
 {
   "version": 3,
   "targets": {
-    "net9.0": {}
+    "net9.0": {
+      "ICSharpCode.SharpZipLib.dll/0.85.4.369": {
+        "type": "package",
+        "compile": {
+          "lib/net20/ICSharpCode.SharpZipLib.dll": {}
+        },
+        "runtime": {
+          "lib/net20/ICSharpCode.SharpZipLib.dll": {}
+        }
+      },
+      "OdsReaderWriter/1.0.14": {
+        "type": "package",
+        "dependencies": {
+          "ICSharpCode.SharpZipLib.dll": "0.85.4.369",
+          "System.Text.Encoding.CodePages": "9.0.4"
+        },
+        "compile": {
+          "lib/net8.0/OdsReaderWriter.dll": {}
+        },
+        "runtime": {
+          "lib/net8.0/OdsReaderWriter.dll": {}
+        },
+        "contentFiles": {
+          "contentFiles/any/net8.0/icon.ico": {
+            "buildAction": "Content",
+            "codeLanguage": "any",
+            "copyToOutput": false
+          }
+        }
+      },
+      "System.Text.Encoding.CodePages/9.0.4": {
+        "type": "package",
+        "compile": {
+          "lib/net9.0/System.Text.Encoding.CodePages.dll": {
+            "related": ".xml"
+          }
+        },
+        "runtime": {
+          "lib/net9.0/System.Text.Encoding.CodePages.dll": {
+            "related": ".xml"
+          }
+        },
+        "build": {
+          "buildTransitive/net8.0/_._": {}
+        },
+        "runtimeTargets": {
+          "runtimes/win/lib/net9.0/System.Text.Encoding.CodePages.dll": {
+            "assetType": "runtime",
+            "rid": "win"
+          }
+        }
+      }
+    }
   },
-  "libraries": {},
+  "libraries": {
+    "ICSharpCode.SharpZipLib.dll/0.85.4.369": {
+      "sha512": "HrJHR5IQoTXXQZgoGZZiu2oYw7V4FdjhwVLwWhV4G+9Xe9wo4MB+n7OaG96efyEJ2PFm4KhCbWNr54HWFdyt2A==",
+      "type": "package",
+      "path": "icsharpcode.sharpziplib.dll/0.85.4.369",
+      "files": [
+        ".nupkg.metadata",
+        ".signature.p7s",
+        "NuGet.Config",
+        "NuGet.exe",
+        "NuGet.targets",
+        "icsharpcode.sharpziplib.dll.0.85.4.369.nupkg.sha512",
+        "icsharpcode.sharpziplib.dll.nuspec",
+        "lib/net20/ICSharpCode.SharpZipLib.dll",
+        "packages.config"
+      ]
+    },
+    "OdsReaderWriter/1.0.14": {
+      "sha512": "uQnUdFc82JQHjRggCmLZEdlOD2EwEaQ5JEyNTuWsNRvKDdM32B3rkPLaEaMDcnmpqMOo7QNopiiGgqoAA5zEfg==",
+      "type": "package",
+      "path": "odsreaderwriter/1.0.14",
+      "files": [
+        ".nupkg.metadata",
+        ".signature.p7s",
+        "README.md",
+        "content/icon.ico",
+        "contentFiles/any/net35/icon.ico",
+        "contentFiles/any/net40/icon.ico",
+        "contentFiles/any/net45/icon.ico",
+        "contentFiles/any/net47/icon.ico",
+        "contentFiles/any/net48/icon.ico",
+        "contentFiles/any/net6.0/icon.ico",
+        "contentFiles/any/net7.0/icon.ico",
+        "contentFiles/any/net8.0/icon.ico",
+        "contentFiles/any/netstandard2.0/icon.ico",
+        "icon.png",
+        "lib/net35/OdsReaderWriter.dll",
+        "lib/net40/OdsReaderWriter.dll",
+        "lib/net45/OdsReaderWriter.dll",
+        "lib/net47/OdsReaderWriter.dll",
+        "lib/net48/OdsReaderWriter.dll",
+        "lib/net6.0/OdsReaderWriter.dll",
+        "lib/net7.0/OdsReaderWriter.dll",
+        "lib/net8.0/OdsReaderWriter.dll",
+        "lib/netstandard2.0/OdsReaderWriter.dll",
+        "odsreaderwriter.1.0.14.nupkg.sha512",
+        "odsreaderwriter.nuspec"
+      ]
+    },
+    "System.Text.Encoding.CodePages/9.0.4": {
+      "sha512": "2lmgWFN1nRaLqIQvbPeL/N0h2SFftmRyckEM9kHO3eRDniN+07nPDepC1HEPgeD+Nzihyi0r8VGTErj6WTO9KQ==",
+      "type": "package",
+      "path": "system.text.encoding.codepages/9.0.4",
+      "files": [
+        ".nupkg.metadata",
+        ".signature.p7s",
+        "Icon.png",
+        "LICENSE.TXT",
+        "PACKAGE.md",
+        "THIRD-PARTY-NOTICES.TXT",
+        "buildTransitive/net461/System.Text.Encoding.CodePages.targets",
+        "buildTransitive/net462/_._",
+        "buildTransitive/net8.0/_._",
+        "buildTransitive/netcoreapp2.0/System.Text.Encoding.CodePages.targets",
+        "lib/MonoAndroid10/_._",
+        "lib/MonoTouch10/_._",
+        "lib/net462/System.Text.Encoding.CodePages.dll",
+        "lib/net462/System.Text.Encoding.CodePages.xml",
+        "lib/net8.0/System.Text.Encoding.CodePages.dll",
+        "lib/net8.0/System.Text.Encoding.CodePages.xml",
+        "lib/net9.0/System.Text.Encoding.CodePages.dll",
+        "lib/net9.0/System.Text.Encoding.CodePages.xml",
+        "lib/netstandard2.0/System.Text.Encoding.CodePages.dll",
+        "lib/netstandard2.0/System.Text.Encoding.CodePages.xml",
+        "lib/xamarinios10/_._",
+        "lib/xamarinmac20/_._",
+        "lib/xamarintvos10/_._",
+        "lib/xamarinwatchos10/_._",
+        "runtimes/win/lib/net8.0/System.Text.Encoding.CodePages.dll",
+        "runtimes/win/lib/net8.0/System.Text.Encoding.CodePages.xml",
+        "runtimes/win/lib/net9.0/System.Text.Encoding.CodePages.dll",
+        "runtimes/win/lib/net9.0/System.Text.Encoding.CodePages.xml",
+        "system.text.encoding.codepages.9.0.4.nupkg.sha512",
+        "system.text.encoding.codepages.nuspec",
+        "useSharedDesignerContext.txt"
+      ]
+    }
+  },
   "projectFileDependencyGroups": {
-    "net9.0": []
+    "net9.0": [
+      "OdsReaderWriter >= 1.0.14"
+    ]
   },
   "packageFolders": {
     "C:\\Users\\adamp\\.nuget\\packages\\": {}
@@ -49,6 +190,12 @@
     "frameworks": {
       "net9.0": {
         "targetAlias": "net9.0",
+        "dependencies": {
+          "OdsReaderWriter": {
+            "target": "Package",
+            "version": "[1.0.14, )"
+          }
+        },
         "imports": [
           "net461",
           "net462",
@@ -68,5 +215,17 @@
         "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\9.0.304/PortableRuntimeIdentifierGraph.json"
       }
     }
-  }
+  },
+  "logs": [
+    {
+      "code": "NU1701",
+      "level": "Warning",
+      "warningLevel": 1,
+      "message": "Package 'ICSharpCode.SharpZipLib.dll 0.85.4.369' was restored using '.NETFramework,Version=v4.6.1, .NETFramework,Version=v4.6.2, .NETFramework,Version=v4.7, .NETFramework,Version=v4.7.1, .NETFramework,Version=v4.7.2, .NETFramework,Version=v4.8, .NETFramework,Version=v4.8.1' instead of the project target framework 'net9.0'. This package may not be fully compatible with your project.",
+      "libraryId": "ICSharpCode.SharpZipLib.dll",
+      "targetGraphs": [
+        "net9.0"
+      ]
+    }
+  ]
 }

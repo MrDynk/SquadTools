@@ -54,13 +54,13 @@ using SquadSheets;
             ZoneInfo = new List<Tuple<DateTime, string>>(),
             CombatantInfo = new List<Tuple<DateTime, string>>(),
             Deaths = new List<Tuple<DateTime, string>>(),
-            Loot = new List<Tuple<DateTime, string>>(),
-            SquadSheetPlayerRoster = new List<Tuple<int, string>>()
+            Loot = new List<Loot>(),
+             SquadPlayers = new List<Player>()
         };
 
         // Initialize repositories and calculator
         ILogRepository logRepository = new TwowLogRepository(logFilePath);
-        ISquadSheetRepository squadSheetRepository = new SquadSheetRepository(squadSheetPath);
+        ISquadSheetRepository squadSheetRepository = new SquadSheetRepositoryODS(squadSheetPath, squadSheetContext);
         IDkpCalculator dkpCalculator = new DkpCalculator();
 
         // Data retrieval
@@ -68,48 +68,72 @@ using SquadSheets;
         squadSheetRepository.GetRosterDetails(squadSheetContext);
 
 
-squadSheetContext.SquadPlayers = new List<Player>();
 
 
-
-/*
-//Build Valid Squad Players List
+//Build Valid Squad Players List and associate timestamps
 foreach (var logCombatant in squadSheetContext.CombatantInfo)
 {
-    var matchingSquadEntry = squadSheetContext.SquadSheetPlayerRoster
+    /*  var matchingSquadEntry = squadSheetContext.SquadSheetPlayerRoster
     .FirstOrDefault(s => s.Item2.Contains(logCombatant.Item2, StringComparison.OrdinalIgnoreCase));
+   
 
     if (matchingSquadEntry == null)
     {
-        Console.WriteLine($"Player in log not found in squad sheet: {logCombatant.Item2}");
+        Console.WriteLine($"Player in log not found in squad sheet: {combatantName}");
         continue;
     }
-
+     */
+    var combatantName = logCombatant.Item2;
     var player = squadSheetContext.SquadPlayers
-        .FirstOrDefault(p => string.Equals(p.NamesAndAliases, matchingSquadEntry.Item2, StringComparison.OrdinalIgnoreCase));
+        .FirstOrDefault(p => p.PlayerAliases.Contains(combatantName));
 
-    if (player != null && !player.CombatantTimeStamps.Contains(logCombatant.Item1))
+    if (player == null)
     {
-        Console.WriteLine($"Detected Alt in raid activity for Player Family: {player.NamesAndAliases}");
-        player.CombatantTimeStamps.Add(logCombatant.Item1);
+        Console.WriteLine($"Detected non squad player in raid {combatantName}");
         continue;
     }
-    player = new Player
-    {
-        SquadSheetLocation = matchingSquadEntry.Item1,
-        NamesAndAliases = matchingSquadEntry.Item2,
-        TotalDkp = 0,
-        EarnedDkp = 0,
-        FatLoot = new List<string>(),
-        CombatantTimeStamps = new List<DateTime>()
-    };
 
-    player.CombatantTimeStamps.Add(logCombatant.Item1);
-    squadSheetContext.SquadPlayers.Add(player);
+    player.AliasTimeStamps[combatantName].Add(logCombatant.Item1);
+    player.PresentInRaid = true;
 }
-*/
-//associate loot        
 
+//remove players without timestamps
+squadSheetContext.SquadPlayers = squadSheetContext.SquadPlayers
+    .Where(p => p.PresentInRaid).ToList();
+
+//associate loot
+foreach (var item in squadSheetContext.Loot)
+{
+    //Console.WriteLine($"Time Looted: {item.TimeStamp} Player: {item.PlayerName} Item: {item.Item} Cost: Could Be Read from discord bot");
+    var player = squadSheetContext.SquadPlayers
+        .FirstOrDefault(p => p.PlayerAliases.Contains(item.PlayerName));
+
+        if( player == null)
+        {
+            Console.WriteLine($"Looted item for non squad player {item.PlayerName} Item: {item.Item} Time: {item.TimeStamp}");
+            continue;
+        }
+        player.FatLoot.Add(item);
+}        
+
+//output players detected in raid, their timestamps and loot
+foreach (var player in squadSheetContext.SquadPlayers)
+{
+    Console.WriteLine("===================================");
+    foreach (var alias in player.PlayerAliases)
+    {
+        player.AliasTimeStamps[alias] = player.AliasTimeStamps[alias].OrderBy(t => t).ToList();
+        var timestamps = string.Join(", ", player.AliasTimeStamps[alias].Select(t => t.ToString("HH:mm:ss")));
+        Console.WriteLine($"Alias: {alias}, Timestamps: {timestamps}");
+    }
+
+    Console.WriteLine("Loot:");
+    foreach (var loot in player.FatLoot)
+    {
+        Console.WriteLine($"  Time: {loot.TimeStamp}, Item: {loot.Item}");
+    }
+    Console.WriteLine();
+}
 
 
 

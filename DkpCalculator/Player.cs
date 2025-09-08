@@ -1,11 +1,16 @@
 public class Player
 {
+    public bool PresentInRaid = false;
     public int SquadSheetLocation { get; set; }
-    public string NamesAndAliases { get; set; }
     public int TotalDkp { get; set; }
     public int EarnedDkp { get; set; }
-    public List<string> FatLoot { get; set; }
-    public Tuple<string, DateTime> LastTimeActiveBeforeBossDefeat { get; set; }
+    public List<Loot> FatLoot { get; set; }
+    public Dictionary<string, List<DateTime>> AliasTimeStamps { get; set; }
 
-    public List<DateTime> CombatantTimeStamps { get; set; }
+    public List<string> PlayerAliases {
+        get
+        {
+            return AliasTimeStamps.Keys.ToList();
+        }
+    }
 }

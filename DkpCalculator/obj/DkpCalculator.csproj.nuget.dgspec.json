@@ -43,6 +43,12 @@
       "frameworks": {
         "net9.0": {
           "targetAlias": "net9.0",
+          "dependencies": {
+            "OdsReaderWriter": {
+              "target": "Package",
+              "version": "[1.0.14, )"
+            }
+          },
           "imports": [
             "net461",
             "net462",

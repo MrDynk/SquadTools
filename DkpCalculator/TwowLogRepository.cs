@@ -16,7 +16,7 @@ namespace Logs
             context.ZoneInfo = new List<Tuple<DateTime, string>>();
             context.CombatantInfo = new List<Tuple<DateTime, string>>();
             context.Deaths = new List<Tuple<DateTime, string>>();
-            context.Loot = new List<Tuple<DateTime, string>>();
+            context.Loot = new List<Loot>();
 
             var allLines = File.ReadAllLines(_logDirectory);
 
@@ -30,6 +30,7 @@ namespace Logs
                     {
                         continue;
                     }
+                    continue;
                 }
 
                 //9/3 20:45:46.437  COMBATANT_INFO: 03.09.25 20:45:46&Holecloser&PRIEST&Human&3&nil&SQUAD&Battle Brother&4&nil&21507:440:0:0&22515:0:0:0&nil&nil&nil&nil&nil&22519:2566:0:0&nil&17110:440:0:0&19863:440:0:0&18469:0:0:0&19950:0:0:0&nil&nil&nil&21801:0:0:0&nil&nil
@@ -40,6 +41,7 @@ namespace Logs
                     {
                         continue;
                     }
+                    continue;
 
                 }
                 //9/3 21:08:15.762  Sharkblood dies.
@@ -64,6 +66,51 @@ namespace Logs
                                 if (!string.IsNullOrEmpty(between))
                                 {
                                     context.Deaths.Add(new Tuple<DateTime, string>(timestamp, between));
+                                }
+                            }
+                        }
+                    }
+                    continue;
+                }
+
+
+
+                //9/3 21:16:23.404  LOOT_TRADE: 03.09.25 21:16:23&Brakin trades item Widow's Remorse to Dwynk.
+                if (line.Contains("LOOT_TRADE"))
+                {
+                    Console.WriteLine("Loot Trade logic not yet implemented, need to grab from and too player names and fix player objects accordingly");
+                    Console.WriteLine(line);
+                    Console.WriteLine("---");
+                    continue;
+                }
+
+                //9/3 21:14:54.005  LOOT: 03.09.25 21:14:54&Turthot receives loot: |cffa335ee|Hitem:22362:0:0:0|h[Desecrated Wristguards]|h|rx1.
+                //9/3 20:54:59.462  LOOT: 03.09.25 20:54:59&Dwynk receives item: |cffffffff|Hitem:83004:0:0:0|h[Conjured Mana Orange]|h|rx20.
+                if (line.Contains("LOOT")&& !line.Contains("receives item:"))
+                {
+                    var tokens = line.Split('&');
+                    if (tokens.Length > 1)
+                    {
+                        var timestampStr = tokens[0].Substring(0, line.IndexOf(" LOOT:")).Trim();
+                        DateTime timestamp;
+                        if (DateTime.TryParseExact(timestampStr, "M/d HH:mm:ss.fff", null,
+                                                    System.Globalization.DateTimeStyles.None, out timestamp))
+                        {
+                            var playerPart = tokens[1];
+                            var playerNameEndIdx = playerPart.IndexOf(" receives loot:");
+                            if (playerNameEndIdx > 0)
+                            {
+                                var playerName = playerPart.Substring(0, playerNameEndIdx).Trim();
+                                var itemPart = playerPart.Substring(playerNameEndIdx + " receives loot:".Length).Trim();
+                                if (!string.IsNullOrEmpty(playerName) && !string.IsNullOrEmpty(itemPart))
+                                {
+                                    string itemName = itemPart.Substring(itemPart.IndexOf('[') + 1, itemPart.IndexOf(']') - itemPart.IndexOf('[') - 1);
+                                    context.Loot.Add(new Loot
+                                    {
+                                        TimeStamp = timestamp,
+                                        PlayerName = playerName,
+                                        Item = itemName
+                                    });
                                 }
                             }
                         }
