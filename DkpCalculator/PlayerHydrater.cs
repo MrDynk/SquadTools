@@ -1,33 +1,12 @@
-public class SquadSheetContext
+public class PlayerHydrater
 {
-    public const int RaidIdRow = 1;
-    public const int PlayerRosterColumn = 0;
-    public const int CurrentDkpColumn = 6;
-    public const int DkpSpentColumn = 4;
-
-    public int RaidColumn { get; set; }
-    public DateTime RaidStart { get; set; }
-    public DateTime RaidEnd { get; set; }
-
-    //log data
-    public List<Tuple<DateTime, string>> ZoneInfo { get; set; }
-    public List<Tuple<DateTime, string>> CombatantInfo { get; set; }
-    public List<Tuple<DateTime, string>> Deaths { get; set; }
-    public List<Loot> Loot { get; set; }
-
-    //squad sheet data
-    //public List<Tuple<int, string>> SquadSheetPlayerRoster { get; set; }
-
-    public List<Player> SquadPlayers { get; set; }
-
-
-    public void PopulateSquadPlayerDetailsForRaid()
+      public void PopulateSquadPlayerDetailsForRaid(SquadSheetContext context)
     {
         //Build Valid Squad Players List and associate timestamps
-        foreach (var logCombatant in CombatantInfo)
+        foreach (var logCombatant in context.CombatantInfo)
         {
             var combatantName = logCombatant.Item2;
-            var player = SquadPlayers
+            var player = context.SquadPlayers
                 .FirstOrDefault(p => p.PlayerAliases.Contains(combatantName));
 
             if (player == null)
@@ -41,15 +20,15 @@ public class SquadSheetContext
         }
 
         //remove players without timestamps
-        SquadPlayers = SquadPlayers
+        context.SquadPlayers = context.SquadPlayers
             .Where(p => p.PresentInRaid).ToList();
 
         //Associate Loot with Squad Players
         //associate loot
-        foreach (var item in Loot)
+        foreach (var item in context.Loot)
         {
             //Console.WriteLine($"Time Looted: {item.TimeStamp} Player: {item.PlayerName} Item: {item.Item} Cost: Could Be Read from discord bot");
-            var player = SquadPlayers
+            var player = context.SquadPlayers
                 .FirstOrDefault(p => p.PlayerAliases.Contains(item.PlayerName));
 
             if (player == null)

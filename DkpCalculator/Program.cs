@@ -10,101 +10,66 @@ using SquadSheets;
 
 
 //grab log location and dkp sheet location from args
- if (args.Length < 1)
-        {
-            Console.WriteLine("Usage: DkpCalculator <logfile>, <dkpsheet>");
-            return;
-        }
-
-        string logFilePath = args[0];
-        if (!File.Exists(logFilePath))
-        {
-            Console.WriteLine($"Log file not found: {logFilePath}");
-            return;
-        }
-        
-        
-        string squadSheetPath = args[1];
-        if (!File.Exists(squadSheetPath))
-        {
-            Console.WriteLine($"SquadSheet not found: {squadSheetPath}");
-            return;
-        }
-
-    //prompt user for start and end time
-    Console.WriteLine("Enter raid start time (yyyy-MM-dd HH:mm):");
-        DateTime raidStart;
-        while (!DateTime.TryParse(Console.ReadLine(), out raidStart))
-        {
-            Console.WriteLine("Invalid format. Please enter the start time in the format yyyy-MM-dd HH:mm:");
-        }
-
-        Console.WriteLine("Enter raid end time (yyyy-MM-dd HH:mm):");
-        DateTime raidEnd;
-        while (!DateTime.TryParse(Console.ReadLine(), out raidEnd) || raidEnd <= raidStart)
-        {
-            Console.WriteLine("Invalid format or end time is before start time. Please enter the end time in the format yyyy-MM-dd HH:mm:");
-        }
-
-        // Initialize contexts
-        var squadSheetContext = new SquadSheetContext
-        {
-            RaidStart = raidStart,
-            RaidEnd = raidEnd,
-            ZoneInfo = new List<Tuple<DateTime, string>>(),
-            CombatantInfo = new List<Tuple<DateTime, string>>(),
-            Deaths = new List<Tuple<DateTime, string>>(),
-            Loot = new List<Loot>(),
-            SquadPlayers = new List<Player>()
-        };
-
-        // Initialize repositories and calculator
-        ILogRepository logRepository = new TwowLogRepository(logFilePath);
-        ISquadSheetRepository squadSheetRepository = new SquadSheetRepositoryODS(squadSheetPath, squadSheetContext);
-        IDkpCalculator dkpCalculator = new DkpCalculator();
-
-        // Data retrieval
-        logRepository.GetPriliminaryDataPoints(squadSheetContext);
-        squadSheetRepository.GetRosterDetails(squadSheetContext);
-
-
-
-
-//Build Valid Squad Players List and associate timestamps
-foreach (var logCombatant in squadSheetContext.CombatantInfo)
+if (args.Length < 1)
 {
-    var combatantName = logCombatant.Item2;
-    var player = squadSheetContext.SquadPlayers
-        .FirstOrDefault(p => p.PlayerAliases.Contains(combatantName));
-
-    if (player == null)
-    {
-        Console.WriteLine($"Detected non squad player in Log {combatantName}");
-        continue;
-    }
-
-    player.AliasTimeStamps[combatantName].Add(logCombatant.Item1);
-    player.PresentInRaid = true;
+    Console.WriteLine("Usage: DkpCalculator <logfile>, <dkpsheet>");
+    return;
 }
 
-//remove players without timestamps
-squadSheetContext.SquadPlayers = squadSheetContext.SquadPlayers
-    .Where(p => p.PresentInRaid).ToList();
-
-//associate loot
-foreach (var item in squadSheetContext.Loot)
+string logFilePath = args[0];
+if (!File.Exists(logFilePath))
 {
-    //Console.WriteLine($"Time Looted: {item.TimeStamp} Player: {item.PlayerName} Item: {item.Item} Cost: Could Be Read from discord bot");
-    var player = squadSheetContext.SquadPlayers
-        .FirstOrDefault(p => p.PlayerAliases.Contains(item.PlayerName));
-
-        if( player == null)
-        {
-            Console.WriteLine($"Looted item for non squad player {item.PlayerName} Item: {item.Item} Time: {item.TimeStamp}");
-            continue;
-        }
-        player.FatLoot.Add(item);
+    Console.WriteLine($"Log file not found: {logFilePath}");
+    return;
 }
+
+
+string squadSheetPath = args[1];
+if (!File.Exists(squadSheetPath))
+{
+    Console.WriteLine($"SquadSheet not found: {squadSheetPath}");
+    return;
+}
+
+//prompt user for start and end time
+Console.WriteLine("Enter raid start time (yyyy-MM-dd HH:mm):");
+DateTime raidStart;
+while (!DateTime.TryParse(Console.ReadLine(), out raidStart))
+{
+    Console.WriteLine("Invalid format. Please enter the start time in the format yyyy-MM-dd HH:mm:");
+}
+
+Console.WriteLine("Enter raid end time (yyyy-MM-dd HH:mm):");
+DateTime raidEnd;
+while (!DateTime.TryParse(Console.ReadLine(), out raidEnd) || raidEnd <= raidStart)
+{
+    Console.WriteLine("Invalid format or end time is before start time. Please enter the end time in the format yyyy-MM-dd HH:mm:");
+}
+
+// Initialize contexts
+var squadSheetContext = new SquadSheetContext
+{
+    RaidStart = raidStart,
+    RaidEnd = raidEnd,
+    ZoneInfo = new List<Tuple<DateTime, string>>(),
+    CombatantInfo = new List<Tuple<DateTime, string>>(),
+    Deaths = new List<Tuple<DateTime, string>>(),
+    Loot = new List<Loot>(),
+    SquadPlayers = new List<Player>()
+};
+
+// Initialize repositories and calculator
+ILogRepository logRepository = new TwowLogRepository(logFilePath);
+ISquadSheetRepository squadSheetRepository = new SquadSheetRepositoryODS(squadSheetPath, squadSheetContext);
+IDkpCalculator dkpCalculator = new DkpCalculator();
+var PlayerHydrater = new PlayerHydrater();
+
+// Data retrieval
+logRepository.GetPriliminaryDataPoints(squadSheetContext);
+squadSheetRepository.GetRosterDetails(squadSheetContext);
+
+//populate squad players with timestamps from log and loot
+PlayerHydrater.PopulateSquadPlayerDetailsForRaid(squadSheetContext);
 
 //output players detected in raid, their timestamps and loot
 
