@@ -89,7 +89,7 @@ foreach (var logCombatant in squadSheetContext.CombatantInfo)
 
     if (player == null)
     {
-        Console.WriteLine($"Detected non squad player in raid {combatantName}");
+        Console.WriteLine($"Detected non squad player in Log {combatantName}");
         continue;
     }
 
@@ -126,7 +126,8 @@ foreach (var player in squadSheetContext.SquadPlayers)
         var timestamps = string.Join(", ", player.AliasTimeStamps[alias].Select(t => t.ToString("HH:mm:ss")));
         Console.WriteLine($"Alias: {alias}, Timestamps: {timestamps}");
     }
-
+    //Console.WriteLine($"earned DKP{player.EarnedDkp}");
+    Console.WriteLine($"Total DKP: {player.TotalDkp}");
     Console.WriteLine("Loot:");
     foreach (var loot in player.FatLoot)
     {
