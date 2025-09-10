@@ -1,8 +1,8 @@
 public class PlayerHydrater
 {
-      public void PopulateSquadPlayerDetailsForRaid(SquadSheetContext context)
+    public void PopulateSquadPlayerDetailsForRaid(SquadSheetContext context)
     {
-        //Build Valid Squad Players List and associate timestamps
+        //Build Valid Squad Players List and associate Combatant info Timestamps
         foreach (var logCombatant in context.CombatantInfo)
         {
             var combatantName = logCombatant.Item2;
@@ -17,6 +17,34 @@ public class PlayerHydrater
 
             player.AliasTimeStamps[combatantName].Add(logCombatant.Item1);
             player.PresentInRaid = true;
+        }
+
+        //associate activity gaps
+        foreach (var player in context.SquadPlayers)
+        {
+            foreach (var alias in player.PlayerAliases)
+            {
+                if (!context.AliasTimeStamps.TryGetValue(alias, out var times) || times.Count < 2)
+                    continue;
+
+                times.Sort();
+                for (int i = 1; i < times.Count; i++)
+                {
+                    var diff = times[i] - times[i - 1];
+                    if (diff.TotalMinutes >= ApplicationOptions.InactivityThresholdMinutes)
+                    {
+                        //Console.WriteLine($"Player {alias} inactive from {times[i - 1]:HH:mm:ss} to {times[i]:HH:mm:ss} ({diff.TotalMinutes:F1} min)");
+                        PlayerActivityGap activityGap = new PlayerActivityGap
+                        {
+                            GapStart = times[i - 1],
+                            GapEnd = times[i],
+                        };
+
+                        player.ActivityGaps.Add(activityGap);
+                    }
+                }
+
+            }
         }
 
         //remove players without timestamps
@@ -37,6 +65,18 @@ public class PlayerHydrater
                 continue;
             }
             player.FatLoot.Add(item);
+        }
+
+
+        foreach (var death in context.Deaths)
+        {
+            var player = context.SquadPlayers
+                .FirstOrDefault(p => p.PlayerAliases.Contains(death.Item2));
+
+            if (player != null)
+            {
+                player.Deaths.Add(death.Item1);
+            }
         }
     }
 }

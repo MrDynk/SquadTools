@@ -1,18 +1,19 @@
+using System.Reflection.Metadata;
+
 public class SquadSheetContext
 {
-    public const int RaidIdRow = 1;
-    public const int PlayerRosterColumn = 0;
-    public const int CurrentDkpColumn = 6;
-    public const int DkpSpentColumn = 4;
 
-    public int RaidColumn { get; set; }
+    public List<Boss> BossesDefeated { get; set; }
+    public int RaidColumn = -1;
     public DateTime RaidStart { get; set; }
     public DateTime RaidEnd { get; set; }
-
+    public int PotentialDkpEarnedForRaid { get; set; }
     //log data
     public List<Tuple<DateTime, string>> ZoneInfo { get; set; }
     public List<Tuple<DateTime, string>> CombatantInfo { get; set; }
     public List<Tuple<DateTime, string>> Deaths { get; set; }
+
+    public Dictionary<string, List<DateTime>> AliasTimeStamps { get; set; }
     public List<Loot> Loot { get; set; }
 
     //squad sheet data
@@ -21,43 +22,5 @@ public class SquadSheetContext
     public List<Player> SquadPlayers { get; set; }
 
 
-    public void PopulateSquadPlayerDetailsForRaid()
-    {
-        //Build Valid Squad Players List and associate timestamps
-        foreach (var logCombatant in CombatantInfo)
-        {
-            var combatantName = logCombatant.Item2;
-            var player = SquadPlayers
-                .FirstOrDefault(p => p.PlayerAliases.Contains(combatantName));
-
-            if (player == null)
-            {
-                Console.WriteLine($"Detected non squad player in Log {combatantName}");
-                continue;
-            }
-
-            player.AliasTimeStamps[combatantName].Add(logCombatant.Item1);
-            player.PresentInRaid = true;
-        }
-
-        //remove players without timestamps
-        SquadPlayers = SquadPlayers
-            .Where(p => p.PresentInRaid).ToList();
-
-        //Associate Loot with Squad Players
-        //associate loot
-        foreach (var item in Loot)
-        {
-            //Console.WriteLine($"Time Looted: {item.TimeStamp} Player: {item.PlayerName} Item: {item.Item} Cost: Could Be Read from discord bot");
-            var player = SquadPlayers
-                .FirstOrDefault(p => p.PlayerAliases.Contains(item.PlayerName));
-
-            if (player == null)
-            {
-                Console.WriteLine($"Looted item for non squad player {item.PlayerName} Item: {item.Item} Time: {item.TimeStamp}");
-                continue;
-            }
-            player.FatLoot.Add(item);
-        }
-    }
+  
 }

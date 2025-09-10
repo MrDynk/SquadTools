@@ -1,12 +1,34 @@
 {
   "version": 2,
-  "dgSpecHash": "8tHY6f+GXq0=",
+  "dgSpecHash": "8NEtOEN1/0M=",
   "success": true,
   "projectFilePath": "C:\\Users\\adamp\\SquadTools\\DkpCalculator\\DkpCalculator.csproj",
   "expectedPackageFiles": [
+    "C:\\Users\\adamp\\.nuget\\packages\\bouncycastle.cryptography\\2.4.0\\bouncycastle.cryptography.2.4.0.nupkg.sha512",
+    "C:\\Users\\adamp\\.nuget\\packages\\closedxml\\0.105.0\\closedxml.0.105.0.nupkg.sha512",
+    "C:\\Users\\adamp\\.nuget\\packages\\closedxml.parser\\2.0.0\\closedxml.parser.2.0.0.nupkg.sha512",
+    "C:\\Users\\adamp\\.nuget\\packages\\documentformat.openxml\\3.3.0\\documentformat.openxml.3.3.0.nupkg.sha512",
+    "C:\\Users\\adamp\\.nuget\\packages\\documentformat.openxml.framework\\3.3.0\\documentformat.openxml.framework.3.3.0.nupkg.sha512",
+    "C:\\Users\\adamp\\.nuget\\packages\\enums.net\\5.0.0\\enums.net.5.0.0.nupkg.sha512",
+    "C:\\Users\\adamp\\.nuget\\packages\\exceldatareader\\3.7.0\\exceldatareader.3.7.0.nupkg.sha512",
+    "C:\\Users\\adamp\\.nuget\\packages\\exceldatareader.dataset\\3.7.0\\exceldatareader.dataset.3.7.0.nupkg.sha512",
+    "C:\\Users\\adamp\\.nuget\\packages\\excelnumberformat\\1.1.0\\excelnumberformat.1.1.0.nupkg.sha512",
+    "C:\\Users\\adamp\\.nuget\\packages\\extendednumerics.bigdecimal\\2025.1001.2.129\\extendednumerics.bigdecimal.2025.1001.2.129.nupkg.sha512",
     "C:\\Users\\adamp\\.nuget\\packages\\icsharpcode.sharpziplib.dll\\0.85.4.369\\icsharpcode.sharpziplib.dll.0.85.4.369.nupkg.sha512",
+    "C:\\Users\\adamp\\.nuget\\packages\\mathnet.numerics.signed\\5.0.0\\mathnet.numerics.signed.5.0.0.nupkg.sha512",
+    "C:\\Users\\adamp\\.nuget\\packages\\microsoft.io.recyclablememorystream\\3.0.1\\microsoft.io.recyclablememorystream.3.0.1.nupkg.sha512",
+    "C:\\Users\\adamp\\.nuget\\packages\\npoi\\2.7.4\\npoi.2.7.4.nupkg.sha512",
     "C:\\Users\\adamp\\.nuget\\packages\\odsreaderwriter\\1.0.14\\odsreaderwriter.1.0.14.nupkg.sha512",
-    "C:\\Users\\adamp\\.nuget\\packages\\system.text.encoding.codepages\\9.0.4\\system.text.encoding.codepages.9.0.4.nupkg.sha512"
+    "C:\\Users\\adamp\\.nuget\\packages\\rbush.signed\\4.0.0\\rbush.signed.4.0.0.nupkg.sha512",
+    "C:\\Users\\adamp\\.nuget\\packages\\sharpziplib\\1.4.2\\sharpziplib.1.4.2.nupkg.sha512",
+    "C:\\Users\\adamp\\.nuget\\packages\\sixlabors.fonts\\1.0.1\\sixlabors.fonts.1.0.1.nupkg.sha512",
+    "C:\\Users\\adamp\\.nuget\\packages\\sixlabors.imagesharp\\2.1.10\\sixlabors.imagesharp.2.1.10.nupkg.sha512",
+    "C:\\Users\\adamp\\.nuget\\packages\\system.io.packaging\\8.0.1\\system.io.packaging.8.0.1.nupkg.sha512",
+    "C:\\Users\\adamp\\.nuget\\packages\\system.runtime.compilerservices.unsafe\\5.0.0\\system.runtime.compilerservices.unsafe.5.0.0.nupkg.sha512",
+    "C:\\Users\\adamp\\.nuget\\packages\\system.security.cryptography.pkcs\\8.0.1\\system.security.cryptography.pkcs.8.0.1.nupkg.sha512",
+    "C:\\Users\\adamp\\.nuget\\packages\\system.security.cryptography.xml\\8.0.2\\system.security.cryptography.xml.8.0.2.nupkg.sha512",
+    "C:\\Users\\adamp\\.nuget\\packages\\system.text.encoding.codepages\\9.0.8\\system.text.encoding.codepages.9.0.8.nupkg.sha512",
+    "C:\\Users\\adamp\\.nuget\\packages\\zstring\\2.6.0\\zstring.2.6.0.nupkg.sha512"
   ],
   "logs": [
     {

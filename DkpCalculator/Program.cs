@@ -33,17 +33,24 @@ if (!File.Exists(squadSheetPath))
 
 //prompt user for start and end time
 Console.WriteLine("Enter raid start time (yyyy-MM-dd HH:mm):");
+
 DateTime raidStart;
 while (!DateTime.TryParse(Console.ReadLine(), out raidStart))
 {
-    Console.WriteLine("Invalid format. Please enter the start time in the format yyyy-MM-dd HH:mm:");
+    //Console.WriteLine("Invalid format. Please enter the start time in the format yyyy-MM-dd HH:mm:");
+    raidStart = DateTime.Parse("2025-09-03 21:00");
+    Console.WriteLine("Using Debugging Value 2025-09-03 21:00");
+    break;
 }
 
 Console.WriteLine("Enter raid end time (yyyy-MM-dd HH:mm):");
 DateTime raidEnd;
 while (!DateTime.TryParse(Console.ReadLine(), out raidEnd) || raidEnd <= raidStart)
 {
-    Console.WriteLine("Invalid format or end time is before start time. Please enter the end time in the format yyyy-MM-dd HH:mm:");
+    //Console.WriteLine("Invalid format or end time is before start time. Please enter the end time in the format yyyy-MM-dd HH:mm:");
+    raidEnd = DateTime.Parse("2025-09-03 23:31");
+    Console.WriteLine("Using Debugging Value 2025-09-03 23:31");
+    break;
 }
 
 // Initialize contexts
@@ -60,69 +67,31 @@ var squadSheetContext = new SquadSheetContext
 
 // Initialize repositories and calculator
 ILogRepository logRepository = new TwowLogRepository(logFilePath);
-ISquadSheetRepository squadSheetRepository = new SquadSheetRepositoryODS(squadSheetPath, squadSheetContext);
+//ISquadSheetRepository squadSheetRepository = new SquadSheetRepositoryZaretto(squadSheetPath, squadSheetContext);
+ISquadSheetRepository squadSheetRepository = new SquadSheetRepositoryOds(squadSheetPath);
 IDkpCalculator dkpCalculator = new DkpCalculator();
 var PlayerHydrater = new PlayerHydrater();
 
-// Data retrieval
+
 logRepository.GetPriliminaryDataPoints(squadSheetContext);
 squadSheetRepository.GetRosterDetails(squadSheetContext);
-
-//populate squad players with timestamps from log and loot
+logRepository.GetPlayerActivity(squadSheetContext);
 PlayerHydrater.PopulateSquadPlayerDetailsForRaid(squadSheetContext);
 
-//output players detected in raid, their timestamps and loot
-
-/* EXAMPLE:
-===================================
-Alias: Sharkblood, Timestamps: 22:03:49, 22:05:15, 22:09:37, 22:14:53, 22:28:26, 22:29:13
-Alias: Sharkdog, Timestamps: 20:37:13, 20:39:38, 20:47:34, 20:50:31, 20:54:48, 21:08:09, 21:11:18, 21:14:16, 21:18:53, 21:46:11, 21:47:20
-Total DKP: 124
-Loot:
-  Time: 9/5/2025 9:17:38 PM, Item: Qiraji Lord's Insignia
-  Time: 9/5/2025 9:20:37 PM, Item: Heavy Silithid Husk
-  Time: 9/5/2025 9:22:03 PM, Item: Ancient Qiraji Artifact
-  Time: 9/5/2025 9:27:36 PM, Item: Qiraji Lord's Insignia
-  Time: 9/5/2025 9:28:36 PM, Item: Ancient Qiraji Artifact
-  Time: 9/5/2025 9:28:38 PM, Item: Ancient Qiraji Artifact
-  Time: 9/5/2025 9:29:47 PM, Item: Ancient Qiraji Artifact
-  Time: 9/5/2025 9:30:43 PM, Item: Ancient Qiraji Artifact
-  Time: 9/5/2025 9:33:26 PM, Item: Ancient Qiraji Artifact
-  Time: 9/5/2025 9:37:12 PM, Item: Qiraji Lord's Insignia
-  Time: 9/5/2025 9:43:40 PM, Item: Qiraji Lord's Insignia
-  Time: 9/5/2025 9:46:09 PM, Item: Barb of the Sand Reaver
-  Time: 9/5/2025 9:51:40 PM, Item: Qiraji Lord's Insignia
-  Time: 9/5/2025 9:56:01 PM, Item: Bronze Scarab
-  Time: 9/5/2025 9:57:38 PM, Item: Heavy Silithid Husk
-  Time: 9/5/2025 10:01:48 PM, Item: Qiraji Lord's Insignia
-  Time: 9/5/2025 10:39:16 PM, Item: Qiraji Lord's Insignia
-  Time: 9/5/2025 10:39:34 PM, Item: Qiraji Lord's Insignia
-  Time: 9/5/2025 10:42:59 PM, Item: Vek'lor's Gloves of Devastation
-  Time: 9/5/2025 10:57:32 PM, Item: Qiraji Lord's Insignia
-
-===================================
-*/
-foreach (var player in squadSheetContext.SquadPlayers)
+if(squadSheetContext.RaidEnd > squadSheetContext.BossesDefeated.Last().KillTime)
 {
-    Console.WriteLine("===================================");
-    foreach (var alias in player.PlayerAliases)
-    {
-        player.AliasTimeStamps[alias] = player.AliasTimeStamps[alias].OrderBy(t => t).ToList();
-        var timestamps = string.Join(", ", player.AliasTimeStamps[alias].Select(t => t.ToString("HH:mm:ss")));
-        Console.WriteLine($"Alias: {alias}, Timestamps: {timestamps}");
-    }
-    //Console.WriteLine($"earned DKP{player.EarnedDkp}");
-    Console.WriteLine($"Total DKP: {player.TotalDkp}");
-    Console.WriteLine("Loot:");
-    foreach (var loot in player.FatLoot)
-    {
-        Console.WriteLine($"  Time: {loot.TimeStamp}, Item: {loot.Item}");
-    }
-    Console.WriteLine();
+    Console.WriteLine(" ");
+    Console.WriteLine(" ");
+    Console.WriteLine($"Warning: Raid end time {squadSheetContext.RaidEnd} is after {squadSheetContext.BossesDefeated.Last().Name} kill time {squadSheetContext.BossesDefeated.Last().KillTime}. Adjusting raid end time to last boss kill time.");
+    Console.WriteLine(" "); 
+    Console.WriteLine(" ");
+    squadSheetContext.RaidEnd = squadSheetContext.BossesDefeated.Last().KillTime;
 }
 
-//todo: implement dkp calculation
 dkpCalculator.CalculateDkp(squadSheetContext);
+
+ConsoleReporter reporter = new ConsoleReporter();
+reporter.Report(squadSheetContext);
 
 //todo: update DKP in squadsheet
 squadSheetRepository.UpdateDkp(squadSheetContext);
