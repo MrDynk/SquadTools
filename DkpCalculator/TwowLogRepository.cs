@@ -22,11 +22,11 @@ namespace Logs
 
             var allLines = File.ReadAllLines(_logDirectory);
             List<string> zonesEncountered = new List<string>();
-            List<string> potentialBosses = new List<string>();
+            List<(string, string)> potentialBosses = new List<(string, string)>();
             foreach (var line in allLines)
             {
                 //9/3 20:47:06.469  ZONE_INFO: 03.09.25 20:47:06&naxxramas&0
-                if (line.Contains("ZONE_INFO"))
+                if (line.Contains(" ZONE_INFO") && !line.Contains("LOOT"))
                 {
                     string zone = ParseZoneInfo(context, line);
                     if (!string.IsNullOrEmpty(zone) && !zonesEncountered.Contains(zone, StringComparer.OrdinalIgnoreCase))
@@ -75,11 +75,13 @@ namespace Logs
                                 if (!string.IsNullOrEmpty(between))
                                 {
 
-                                    if (potentialBosses.Contains(between, StringComparer.OrdinalIgnoreCase))
+                                    var bossTuple = potentialBosses.FirstOrDefault(p => p.Item1.Equals(between, StringComparison.OrdinalIgnoreCase));
+                                    if (bossTuple != default)
                                     {
                                         Boss boss = new Boss
                                         {
-                                            Name = between,
+                                            Zone = bossTuple.Item2,
+                                            Name = bossTuple.Item1,
                                             KillTime = timestamp
                                         };
                                         context.BossesDefeated.Add(boss);
@@ -154,13 +156,13 @@ namespace Logs
             }
         }
 
-        private void BuildPotentialBosses(string zone, List<string> potentialBosses)
+        private void BuildPotentialBosses(string zone, List<(string,string)> potentialBosses)
         {
                 // Find all bosses for the given zone
                 if (ApplicationOptions.bossNames.TryGetValue(zone, out var bosses))
                 {
-                    potentialBosses.AddRange(bosses);
-                } 
+                    potentialBosses.AddRange(bosses.Select(b => (b, zone)));
+                }
         }
 
         public void GetPlayerActivity(SquadSheetContext context)

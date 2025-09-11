@@ -106,7 +106,9 @@ reporter.Report(squadSheetContext);
 //todo: update DKP in squadsheet
 squadSheetRepository.UpdateDkp(squadSheetContext);
 
-googleDriveRepository.UploadFile(squadSheetPath);
+//googleDriveRepository.UploadFileSharedWithMe(ApplicationOptions.DKPFileName, squadSheetPath);
+
+googleDriveRepository.UploadFile(ApplicationOptions.DKPFileName, squadSheetPath);
 
 
 
