@@ -60,6 +60,10 @@
               "target": "Package",
               "version": "[3.7.0, )"
             },
+            "Google.Apis.Drive.v3": {
+              "target": "Package",
+              "version": "[1.70.0.3893, )"
+            },
             "NPOI": {
               "target": "Package",
               "version": "[2.7.4, )"

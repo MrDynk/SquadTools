@@ -8,6 +8,8 @@ public class ApplicationOptions
     public const int InactivityThresholdMinutes = 5;
 
     public const int DeathOnFinalBossBuffer = 10;
+
+    public const string DKPFileName = "DKP";
     
     public static readonly Dictionary<string, string> ZoneToAbbrevLookup = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
     {
