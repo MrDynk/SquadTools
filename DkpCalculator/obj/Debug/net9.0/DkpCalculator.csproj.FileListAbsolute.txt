@@ -41,3 +41,11 @@ C:\Users\adamp\SquadTools\DkpCalculator\bin\Debug\net9.0\DocumentFormat.OpenXml.
 C:\Users\adamp\SquadTools\DkpCalculator\bin\Debug\net9.0\ExcelNumberFormat.dll
 C:\Users\adamp\SquadTools\DkpCalculator\bin\Debug\net9.0\RBush.dll
 C:\Users\adamp\SquadTools\DkpCalculator\bin\Debug\net9.0\System.IO.Packaging.dll
+C:\Users\adamp\SquadTools\DkpCalculator\bin\Debug\net9.0\Google.Apis.dll
+C:\Users\adamp\SquadTools\DkpCalculator\bin\Debug\net9.0\Google.Apis.Auth.dll
+C:\Users\adamp\SquadTools\DkpCalculator\bin\Debug\net9.0\Google.Apis.Core.dll
+C:\Users\adamp\SquadTools\DkpCalculator\bin\Debug\net9.0\Google.Apis.Drive.v3.dll
+C:\Users\adamp\SquadTools\DkpCalculator\bin\Debug\net9.0\Newtonsoft.Json.dll
+C:\Users\adamp\SquadTools\DkpCalculator\bin\Debug\net9.0\System.CodeDom.dll
+C:\Users\adamp\SquadTools\DkpCalculator\bin\Debug\net9.0\System.Management.dll
+C:\Users\adamp\SquadTools\DkpCalculator\bin\Debug\net9.0\runtimes\win\lib\net7.0\System.Management.dll

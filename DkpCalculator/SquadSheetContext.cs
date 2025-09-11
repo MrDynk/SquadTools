@@ -7,6 +7,18 @@ public class SquadSheetContext
     public int RaidColumn = -1;
     public DateTime RaidStart { get; set; }
     public DateTime RaidEnd { get; set; }
+
+    public string RaidZone
+    {
+        get
+        {
+            if (BossesDefeated != null && BossesDefeated.Count > 0)
+            {
+                return BossesDefeated[0].Zone;
+            }
+            return string.Empty;
+        }
+    }
     public int PotentialDkpEarnedForRaid { get; set; }
     //log data
     public List<Tuple<DateTime, string>> ZoneInfo { get; set; }

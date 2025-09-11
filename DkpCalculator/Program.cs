@@ -16,6 +16,7 @@ if (args.Length < 1)
     return;
 }
 
+
 string logFilePath = args[0];
 if (!File.Exists(logFilePath))
 {
@@ -23,8 +24,17 @@ if (!File.Exists(logFilePath))
     return;
 }
 
+// Parse file name from logFilePath
+string logFileName = Path.GetFileName(logFilePath);
+Console.WriteLine($"Parsed log file name: {logFileName}");
+
+
+
+GoogleDriveRepository googleDriveRepository = new GoogleDriveRepository();
 
 string squadSheetPath = args[1];
+googleDriveRepository.DownloadFile(ApplicationOptions.DKPFileName, squadSheetPath);
+
 if (!File.Exists(squadSheetPath))
 {
     Console.WriteLine($"SquadSheet not found: {squadSheetPath}");
@@ -95,6 +105,10 @@ reporter.Report(squadSheetContext);
 
 //todo: update DKP in squadsheet
 squadSheetRepository.UpdateDkp(squadSheetContext);
+
+//googleDriveRepository.UploadFileSharedWithMe(ApplicationOptions.DKPFileName, squadSheetPath);
+
+googleDriveRepository.UploadFile(ApplicationOptions.DKPFileName, squadSheetPath);
 
 
 
