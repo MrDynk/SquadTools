@@ -33,13 +33,16 @@ Console.WriteLine($"Parsed log file name: {logFileName}");
 GoogleDriveRepository googleDriveRepository = new GoogleDriveRepository();
 
 string squadSheetPath = args[1];
-googleDriveRepository.DownloadFile(ApplicationOptions.DKPFileName, squadSheetPath);
+//googleDriveRepository.DownloadFile(ApplicationOptions.DKPFileName, squadSheetPath);
+// if (!File.Exists(squadSheetPath))
+// {
+//     Console.WriteLine($"SquadSheet not found: {squadSheetPath}");
+//     return;
+// }
 
-if (!File.Exists(squadSheetPath))
-{
-    Console.WriteLine($"SquadSheet not found: {squadSheetPath}");
-    return;
-}
+var squadsheet = googleDriveRepository.DownloadGoogleSheet(ApplicationOptions.DKPFileName);
+
+
 
 //prompt user for start and end time
 Console.WriteLine("Enter raid start time (yyyy-MM-dd HH:mm):");
@@ -78,7 +81,8 @@ var squadSheetContext = new SquadSheetContext
 // Initialize repositories and calculator
 ILogRepository logRepository = new TwowLogRepository(logFilePath);
 //ISquadSheetRepository squadSheetRepository = new SquadSheetRepositoryZaretto(squadSheetPath, squadSheetContext);
-ISquadSheetRepository squadSheetRepository = new SquadSheetRepositoryOds(squadSheetPath);
+//ISquadSheetRepository squadSheetRepository = new SquadSheetRepositoryOds(squadSheetPath);
+ISquadSheetRepository squadSheetRepository = new SquadSheetRepositoryGoogleSheet(squadsheet);
 IDkpCalculator dkpCalculator = new DkpCalculator();
 var PlayerHydrater = new PlayerHydrater();
 
@@ -103,12 +107,12 @@ dkpCalculator.CalculateDkp(squadSheetContext);
 ConsoleReporter reporter = new ConsoleReporter();
 reporter.Report(squadSheetContext);
 
-//todo: update DKP in squadsheet
 squadSheetRepository.UpdateDkp(squadSheetContext);
 
 //googleDriveRepository.UploadFileSharedWithMe(ApplicationOptions.DKPFileName, squadSheetPath);
 
-googleDriveRepository.UploadFile(ApplicationOptions.DKPFileName, squadSheetPath);
+//googleDriveRepository.UploadFile(ApplicationOptions.DKPFileName, squadSheetPath);
+googleDriveRepository.UpdateGoogleSheet(squadsheet);
 
 
 

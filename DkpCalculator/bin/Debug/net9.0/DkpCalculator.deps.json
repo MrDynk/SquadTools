@@ -13,6 +13,7 @@
           "ExcelDataReader": "3.7.0",
           "ExcelDataReader.DataSet": "3.7.0",
           "Google.Apis.Drive.v3": "1.70.0.3893",
+          "Google.Apis.Sheets.v4": "1.70.0.3819",
           "NPOI": "2.7.4",
           "OdsReaderWriter": "1.0.14",
           "System.Text.Encoding.CodePages": "9.0.8"
@@ -161,6 +162,18 @@
           "lib/net6.0/Google.Apis.Drive.v3.dll": {
             "assemblyVersion": "1.70.0.3893",
             "fileVersion": "1.70.0.3893"
+          }
+        }
+      },
+      "Google.Apis.Sheets.v4/1.70.0.3819": {
+        "dependencies": {
+          "Google.Apis": "1.70.0",
+          "Google.Apis.Auth": "1.70.0"
+        },
+        "runtime": {
+          "lib/net6.0/Google.Apis.Sheets.v4.dll": {
+            "assemblyVersion": "1.70.0.3819",
+            "fileVersion": "1.70.0.3819"
           }
         }
       },
@@ -446,6 +459,13 @@
       "sha512": "sha512-adReOZW14Ieu8kQexcFq52ZhgzDIPQXwmkKujWKeWKavlcgxpjWilvj/fWHReWrwwAPT22iqifLmBzuFBTo31g==",
       "path": "google.apis.drive.v3/1.70.0.3893",
       "hashPath": "google.apis.drive.v3.1.70.0.3893.nupkg.sha512"
+    },
+    "Google.Apis.Sheets.v4/1.70.0.3819": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-GiezS2d/gMhP7DIOuBFl2FitYPKARpgnRpdXSy4HUBjlC724fMhSqIoiEx+KgUzn5+7dlnJSycjD1q9JgtB8iQ==",
+      "path": "google.apis.sheets.v4/1.70.0.3819",
+      "hashPath": "google.apis.sheets.v4.1.70.0.3819.nupkg.sha512"
     },
     "ICSharpCode.SharpZipLib.dll/0.85.4.369": {
       "type": "package",

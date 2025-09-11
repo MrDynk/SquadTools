@@ -1,3 +1,5 @@
+using Google.Apis.Sheets.v4;
+using Google.Apis.Sheets.v4.Data;
 
 using Google.Apis.Auth.OAuth2;
 using Google.Apis.Drive.v3;
@@ -105,6 +107,92 @@ public class GoogleDriveRepository
 		}
 	}
 
+	public Spreadsheet DownloadGoogleSheet(string sheetName)
+	{
+		var driveService = GetDriveService();
+		// Find the file by name and type
+		var request = driveService.Files.List();
+		request.Q = $"name='{sheetName}' and mimeType='application/vnd.google-apps.spreadsheet' and trashed=false";
+		request.Fields = "files(id, name)";
+		var result = request.Execute();
+		var file = result.Files?.FirstOrDefault();
+		if (file == null)
+			throw new FileNotFoundException($"Google Sheet '{sheetName}' not found in Google Drive.");
+
+		// Use Sheets API to get the spreadsheet object
+		var sheetsService = new SheetsService(new BaseClientService.Initializer
+		{
+			HttpClientInitializer = driveService.HttpClientInitializer,
+			ApplicationName = ApplicationName,
+		});
+
+		var getRequest = sheetsService.Spreadsheets.Get(file.Id);
+		var spreadsheet = getRequest.Execute();
+		return spreadsheet;
+	}
+
+	public void UpdateGoogleSheet(Spreadsheet spreadsheet)
+	{
+		var driveService = GetDriveService();
+		var sheetsService = new SheetsService(new BaseClientService.Initializer
+		{
+			HttpClientInitializer = driveService.HttpClientInitializer,
+			ApplicationName = ApplicationName,
+		});
+
+		foreach (var sheet in spreadsheet.Sheets)
+		{
+			var sheetTitle = sheet.Properties.Title;
+			var rowData = sheet.Data?.FirstOrDefault()?.RowData;
+			if (rowData == null) continue;
+
+			// Convert RowData to IList<IList<object>>
+			var values = new List<IList<object>>();
+			foreach (var row in rowData)
+			{
+				var rowValues = new List<object>();
+				if (row.Values != null)
+				{
+					foreach (var cell in row.Values)
+					{
+						rowValues.Add(cell.FormattedValue ?? "");
+					}
+				}
+				values.Add(rowValues);
+			}
+
+			// Calculate range (A1 notation)
+			int rowCount = values.Count;
+			int colCount = values.Max(r => r.Count);
+			string endCol = GetExcelColumnName(colCount);
+			string range = $"{sheetTitle}!A1:{endCol}{rowCount}";
+
+			var valueRange = new ValueRange
+			{
+				Range = range,
+				Values = values
+			};
+
+			var updateRequest = sheetsService.Spreadsheets.Values.Update(valueRange, spreadsheet.SpreadsheetId, range);
+			updateRequest.ValueInputOption = SpreadsheetsResource.ValuesResource.UpdateRequest.ValueInputOptionEnum.USERENTERED;
+			var updateResponse = updateRequest.Execute();
+			Console.WriteLine($"Updated {updateResponse.UpdatedCells} cells in range {range} of spreadsheet {spreadsheet.SpreadsheetId}.");
+		}
+	}
+
+	// Helper to get Excel column name from index (1-based)
+	private string GetExcelColumnName(int columnNumber)
+	{
+		string columnName = "";
+		while (columnNumber > 0)
+		{
+			int modulo = (columnNumber - 1) % 26;
+			columnName = Convert.ToChar(65 + modulo) + columnName;
+			columnNumber = (columnNumber - modulo) / 26;
+		}
+		return columnName;
+	}
+
 	public void DownloadFile(string fileName, string localPath)
 	{
 		var service = GetDriveService();
@@ -118,14 +206,15 @@ public class GoogleDriveRepository
 		}
 		else
 		{
-            var debug = true;
-            if(debug){
-			Console.WriteLine("Files found in Google Drive:");
-			foreach (var f in result.Files)
+			var debug = true;
+			if (debug)
 			{
-				Console.WriteLine($"- {f.Name}");
+				Console.WriteLine("Files found in Google Drive:");
+				foreach (var f in result.Files)
+				{
+					Console.WriteLine($"- {f.Name}");
+				}
 			}
-            }
 		}
 
 		var file = result.Files.FirstOrDefault(f => f.Name == fileName);
@@ -136,15 +225,15 @@ public class GoogleDriveRepository
 		//if (file.Name.EndsWith(".gsheet", StringComparison.OrdinalIgnoreCase) || file.Name.EndsWith(".xlsx", StringComparison.OrdinalIgnoreCase) || file.Name.EndsWith(".ods", StringComparison.OrdinalIgnoreCase))
 		//{
 		// Try export as ODS
-			
-			Console.WriteLine($"Exporting Google Sheet '{file.Name}' as xlsx to '{localPath}'");
-			var xslxMine = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
-			var odsMime = "application/vnd.oasis.opendocument.spreadsheet";
-			var exportRequest = service.Files.Export(file.Id, xslxMine);
-			using (var stream = new FileStream(localPath, FileMode.Create, FileAccess.Write))
-			{
-				exportRequest.Download(stream);
-			}
+
+		Console.WriteLine($"Exporting Google Sheet '{file.Name}' as xlsx to '{localPath}'");
+		var xslxMine = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
+		var odsMime = "application/vnd.oasis.opendocument.spreadsheet";
+		var exportRequest = service.Files.Export(file.Id, xslxMine);
+		using (var stream = new FileStream(localPath, FileMode.Create, FileAccess.Write))
+		{
+			exportRequest.Download(stream);
+		}
 		/*}
 		else
 		{
