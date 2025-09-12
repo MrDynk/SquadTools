@@ -11,7 +11,7 @@ public class PlayerHydrater
 
             if (player == null)
             {
-                Console.WriteLine($"Detected non squad player in Log {combatantName}");
+                //Console.WriteLine($"Detected non squad player in Log {combatantName}");
                 continue;
             }
 

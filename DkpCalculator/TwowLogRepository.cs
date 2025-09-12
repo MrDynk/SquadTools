@@ -102,9 +102,10 @@ namespace Logs
                 //9/3 21:16:23.404  LOOT_TRADE: 03.09.25 21:16:23&Brakin trades item Widow's Remorse to Dwynk.
                 if (line.Contains("LOOT_TRADE"))
                 {
-                    Console.WriteLine("Loot Trade logic not yet implemented, need to grab from and too player names and fix player objects accordingly");
+                    /*Console.WriteLine("Loot Trade logic not yet implemented, need to grab from and too player names and fix player objects accordingly");
                     Console.WriteLine(line);
                     Console.WriteLine("---");
+                    */
                     continue;
                 }
 

@@ -1,47 +1,47 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Google.Apis.Sheets.v4;
 using Google.Apis.Sheets.v4.Data;
 
 namespace SquadSheets
 {
-    public class SquadSheetRepositoryGoogleSheet: ISquadSheetRepository
+    public class SquadSheetRepositoryGoogleSheet : ISquadSheetRepository
     {
 
-        private readonly Spreadsheet _squadSheet;
+        private readonly ValueRange _squadSheet;
 
-        public SquadSheetRepositoryGoogleSheet(Spreadsheet squadSheet)
+        public SquadSheetRepositoryGoogleSheet(ValueRange squadSheet)
         {
             _squadSheet = squadSheet;
         }
 
 
-        public void GetRosterDetails(SquadSheetContext context)
+        public void PopulateRaidDetails(SquadSheetContext context)
         {
-            var monthAbv = context.RaidStart.ToString("MMM");
-            string year = context.RaidStart.ToString("yy");
-            // Find the sheet whose title contains the month and year
-            var sheet = _squadSheet.Sheets.FirstOrDefault(s =>
-                s.Properties.Title.Contains(monthAbv, StringComparison.OrdinalIgnoreCase) &&
-                s.Properties.Title.Contains(year));
-            if (sheet == null)
-                throw new Exception($"No sheet found with name containing '{monthAbv}' and '{year}'");
-
-            var values = sheet.Data?.FirstOrDefault()?.RowData;
-            if (values == null)
+            if (_squadSheet.Values == null || _squadSheet.Values.Count == 0)
                 throw new Exception("No data found in the sheet.");
 
-            for (int i = 1; i < values.Count; i++) // skip header
+            IList<object> headerRow =   _squadSheet.Values[0];
+            context.RaidColumn = FindRaidColumn(context, headerRow);
+        }
+
+        public void GetRosterDetails(SquadSheetContext context)
+        {
+            if (_squadSheet.Values == null)
+                throw new Exception("No data found in the sheet.");
+
+            for (int i = 1; i < _squadSheet.Values.Count; i++) // skip header
             {
-                var row = values[i]?.Values;
+                var row = _squadSheet.Values[i];
                 if (row == null || row.Count <= ApplicationOptions.PlayerRosterColumnIndex)
                     break;
-                string playerName = row[ApplicationOptions.PlayerRosterColumnIndex]?.FormattedValue;
+                string playerName = row[ApplicationOptions.PlayerRosterColumnIndex].ToString();
                 if (string.IsNullOrEmpty(playerName))
                     break;
-                var monthlySpentDkp = row.ElementAtOrDefault(ApplicationOptions.MonthlySpentDkpColumnIndex)?.FormattedValue;
-                var availableDkp = row.ElementAtOrDefault(ApplicationOptions.AvailableDkpColumnIndex)?.FormattedValue;
-                var monthlyEarnedDkp = row.ElementAtOrDefault(ApplicationOptions.MonthlyEarnedDkpColumnIndex)?.FormattedValue;
+                var monthlySpentDkp = row.ElementAtOrDefault(ApplicationOptions.MonthlySpentDkpColumnIndex)?.ToString();
+                var availableDkp = row.ElementAtOrDefault(ApplicationOptions.AvailableDkpColumnIndex)?.ToString();
+                var monthlyEarnedDkp = row.ElementAtOrDefault(ApplicationOptions.MonthlyEarnedDkpColumnIndex)?.ToString();
 
                 Player player = new Player
                 {
@@ -65,46 +65,50 @@ namespace SquadSheets
 
         public void UpdateDkp(SquadSheetContext context)
         {
-            var monthAbv = context.RaidStart.ToString("MMM");
-            string year = context.RaidStart.ToString("yy");
-            // Find the sheet whose title contains the month and year
-            var sheet = _squadSheet.Sheets.FirstOrDefault(s =>
-                s.Properties.Title.Contains(monthAbv, StringComparison.OrdinalIgnoreCase) &&
-                s.Properties.Title.Contains(year));
-            if (sheet == null)
-                throw new Exception($"No sheet found with name containing '{monthAbv}' and '{year}'");
-
-            var values = sheet.Data?.FirstOrDefault()?.RowData;
-            if (values == null)
-                throw new Exception("No data found in the sheet.");
 
             for (int i = 0; i < context.SquadPlayers.Count; i++)
             {
                 var player = context.SquadPlayers[i];
-                int rowIndex = player.SquadSheetLocation;
-                var row = values.ElementAtOrDefault(rowIndex)?.Values;
+                var row = _squadSheet.Values[player.SquadSheetLocation];
                 if (row == null) continue;
 
-                SetCellValue(row, ApplicationOptions.AvailableDkpColumnIndex, player.AvailableDkp.ToString());
-                SetCellValue(row, ApplicationOptions.MonthlyEarnedDkpColumnIndex, player.MonthlyEarnedDkp.ToString());
-                SetCellValue(row, ApplicationOptions.MonthlySpentDkpColumnIndex, player.MonthlySpentDkp.ToString());
-                if (context.RaidColumn != -1)
-                    SetCellValue(row, context.RaidColumn, player.RaidEarnedDkp.ToString());
+                row[ApplicationOptions.AvailableDkpColumnIndex] = player.AvailableDkp.ToString();
+                row[ApplicationOptions.MonthlyEarnedDkpColumnIndex] = player.MonthlyEarnedDkp.ToString();
+                row[ApplicationOptions.MonthlySpentDkpColumnIndex] = player.MonthlySpentDkp.ToString();
+                if (row.Count < context.RaidColumn)
+                {
+                    // If the row doesn't have enough columns, add empty cells
+                    for (int j = row.Count; j <= context.RaidColumn; j++)
+                    {
+                        row.Add(string.Empty);
+                    }
+                }
+
+                row[context.RaidColumn] = player.RaidEarnedDkp.ToString();
             }
         }
 
-
-        // Helper to set a cell value in a row (colIndex is 0-based)
-        private void SetCellValue(IList<CellData> row, int colIndex, string value)
+    private int FindRaidColumn(SquadSheetContext context, IList<object> headerRow)
         {
-            if (row.Count <= colIndex)
+            var zonesInLog = context.ZoneInfo.Select(z => z.Item2).Distinct().ToList();
+            var monthDay = context.RaidStart.ToString("M/d");
+            for (int col = 0; col < headerRow.Count; col++)
             {
-                // Expand the row if needed
-                while (row.Count <= colIndex)
-                    row.Add(new CellData());
-            }
-            row[colIndex].UserEnteredValue = new ExtendedValue { StringValue = value };
-        }
+                foreach (var zone in zonesInLog)
+                {
+                    if (!ApplicationOptions.ZoneToAbbrevLookup.TryGetValue(zone, out var abbrev))
+                    {
+                        continue;
+                    }
+                    var columnTitle = headerRow[col]?.ToString();
+                    if (columnTitle.Contains(abbrev, StringComparison.OrdinalIgnoreCase) && columnTitle.Contains(monthDay, StringComparison.OrdinalIgnoreCase))
+                    {
+                        return col;
+                    }
+                }
 
+            }
+            return -1; // Not found
+        }
     }
 }

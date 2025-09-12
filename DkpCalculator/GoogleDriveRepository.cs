@@ -12,25 +12,78 @@ using System.Threading;
 
 public class GoogleDriveRepository
 {
-	private readonly string[] Scopes = { DriveService.Scope.DriveFile, DriveService.Scope.DriveReadonly };
+	private readonly string[] Scopes = { DriveService.Scope.DriveFile, DriveService.Scope.DriveReadonly,DriveService.Scope.DriveAppdata,SheetsService.Scope.Spreadsheets };
 	private readonly string ApplicationName = "SquadToolsDkp";
+	private readonly Google.Apis.Drive.v3.Data.File? _file;
+	private SheetsService _sheetsService;
 
+	private string _sheetTitle;
+	private string _spreadsheetId;
+	private readonly bool _useServiceAccount = true; // Set to false to use OAuth
 	private DriveService GetDriveService()
 	{
-		UserCredential credential;
-		using (var stream = new FileStream("credentials\\credentials.json", FileMode.Open, FileAccess.Read))
+		if (_useServiceAccount)
 		{
-			string credPath = "token.json";
-			credential = GoogleWebAuthorizationBroker.AuthorizeAsync(
-				GoogleClientSecrets.Load(stream).Secrets,
-				Scopes,
-				"user",
-				CancellationToken.None,
-				new FileDataStore(credPath, true)).Result;
+			GoogleCredential credential;
+			using (var stream = new FileStream("credentials/service-account.json", FileMode.Open, FileAccess.Read))
+			{
+				credential = GoogleCredential.FromStream(stream).CreateScoped(Scopes);
+			}
+			return new DriveService(new BaseClientService.Initializer()
+			{
+				HttpClientInitializer = credential,
+				ApplicationName = ApplicationName,
+			});
 		}
-		return new DriveService(new BaseClientService.Initializer()
+		else
 		{
-			HttpClientInitializer = credential,
+			UserCredential credential;
+			using (var stream = new FileStream("credentials/credentials.json", FileMode.Open, FileAccess.Read))
+			{
+				string credPath = "token.json";
+				credential = GoogleWebAuthorizationBroker.AuthorizeAsync(
+					GoogleClientSecrets.Load(stream).Secrets,
+					Scopes,
+					"user",
+					CancellationToken.None,
+					new FileDataStore(credPath, true)).Result;
+			}
+			return new DriveService(new BaseClientService.Initializer()
+			{
+				HttpClientInitializer = credential,
+				ApplicationName = ApplicationName,
+			});
+		}
+	}
+
+	public GoogleDriveRepository(string sheetName, SquadSheetContext context)
+	{
+		var driveService = GetDriveService();
+		// Find the file by name and type
+		var request = driveService.Files.List();
+		//request.Q = $"name='{sheetName}' and mimeType='application/vnd.google-apps.spreadsheet' and trashed=false";
+		request.Q = $"trashed=false";
+		request.Fields = "files(id, name)";
+		var result = request.Execute();
+
+		foreach (var f in result.Files)
+		{
+			Console.WriteLine($"- {f.Name}");
+		}
+
+		request = driveService.Files.List();
+		request.Q = $"name='{sheetName}' and mimeType='application/vnd.google-apps.spreadsheet' and trashed=false";
+		request.Fields = "files(id, name)";
+		 result = request.Execute();
+
+		_file = result.Files?.FirstOrDefault();
+		if (_file == null)
+			throw new FileNotFoundException($"Google Sheet '{sheetName}' not found in Google Drive.");
+
+		// Use Sheets API to get the spreadsheet object
+		_sheetsService = new SheetsService(new BaseClientService.Initializer
+		{
+			HttpClientInitializer = driveService.HttpClientInitializer,
 			ApplicationName = ApplicationName,
 		});
 	}
@@ -59,11 +112,11 @@ public class GoogleDriveRepository
 		{
 			try
 			{
-			var updateRequest = service.Files.Update(new Google.Apis.Drive.v3.Data.File(), sharedFile.Id, fileStream, "application/octet-stream");
-			updateRequest.Fields = "id";
-			updateRequest.SupportsAllDrives = true;
-			Console.WriteLine($"Updating content of shared file '{fileName}' (ID: {sharedFile.Id})...");
-			var uploadResult = updateRequest.Upload();
+				var updateRequest = service.Files.Update(new Google.Apis.Drive.v3.Data.File(), sharedFile.Id, fileStream, "application/octet-stream");
+				updateRequest.Fields = "id";
+				updateRequest.SupportsAllDrives = true;
+				Console.WriteLine($"Updating content of shared file '{fileName}' (ID: {sharedFile.Id})...");
+				var uploadResult = updateRequest.Upload();
 				if (uploadResult.Status == Google.Apis.Upload.UploadStatus.Completed)
 				{
 					Console.WriteLine($"Update successful. File ID: {updateRequest.ResponseBody?.Id}");
@@ -83,7 +136,7 @@ public class GoogleDriveRepository
 
 	public void UploadFile(string fileName, string filePath)
 	{
-	// string testName = "testFile.ods";
+		// string testName = "testFile.ods";
 		string fileNameExt = fileName;
 		var service = GetDriveService();
 		var fileMetadata = new Google.Apis.Drive.v3.Data.File()
@@ -107,78 +160,67 @@ public class GoogleDriveRepository
 		}
 	}
 
-	public Spreadsheet DownloadGoogleSheet(string sheetName)
+	public ValueRange DownloadGoogleSheet(string sheetName, SquadSheetContext context)
 	{
-		var driveService = GetDriveService();
-		// Find the file by name and type
-		var request = driveService.Files.List();
-		request.Q = $"name='{sheetName}' and mimeType='application/vnd.google-apps.spreadsheet' and trashed=false";
-		request.Fields = "files(id, name)";
-		var result = request.Execute();
-		var file = result.Files?.FirstOrDefault();
-		if (file == null)
-			throw new FileNotFoundException($"Google Sheet '{sheetName}' not found in Google Drive.");
 
-		// Use Sheets API to get the spreadsheet object
-		var sheetsService = new SheetsService(new BaseClientService.Initializer
-		{
-			HttpClientInitializer = driveService.HttpClientInitializer,
-			ApplicationName = ApplicationName,
-		});
+		var getRequest = _sheetsService.Spreadsheets.Get(_file.Id);
+		Spreadsheet spreadsheet = getRequest.Execute();
 
-		var getRequest = sheetsService.Spreadsheets.Get(file.Id);
-		var spreadsheet = getRequest.Execute();
-		return spreadsheet;
+
+		var monthAbv = context.RaidStart.ToString("MMM");
+		string year = context.RaidStart.ToString("yy");
+
+		
+		// Find the sheet whose title contains the month and year
+		Sheet? sheet = spreadsheet.Sheets.FirstOrDefault(s =>
+			s.Properties.Title.Contains(monthAbv, StringComparison.OrdinalIgnoreCase) &&
+			s.Properties.Title.Contains(year));
+		if (sheet == null)
+			throw new Exception($"No sheet found with name containing '{monthAbv}' and '{year}'");
+		Console.WriteLine($"Sheet Title: {sheet.Properties.Title}, Sheet ID: {sheet.Properties.SheetId}");
+
+		_sheetTitle = sheet.Properties.Title;
+		_spreadsheetId = spreadsheet.SpreadsheetId;
+		//goofy shit "R1C1:R328C61
+		ValueRange data = _sheetsService.Spreadsheets.Values.Get(_spreadsheetId, _sheetTitle).Execute();
+		
+
+		// foreach (var row in data.Values)
+		// {
+		// 	for (int i = 0; i < row.Count; i++)
+		// 	{
+		// 		Console.Write($"'{row[i]}' ||");
+		// 	}
+		// }
+		return data;
 	}
 
-	public void UpdateGoogleSheet(Spreadsheet spreadsheet)
+	public void UpdateGoogleSheet(ValueRange spreadsheet)
 	{
-		var driveService = GetDriveService();
-		var sheetsService = new SheetsService(new BaseClientService.Initializer
-		{
-			HttpClientInitializer = driveService.HttpClientInitializer,
-			ApplicationName = ApplicationName,
-		});
+        var driveService = GetDriveService();
+        var sheetsService = new SheetsService(new BaseClientService.Initializer
+        {
+            HttpClientInitializer = driveService.HttpClientInitializer,
+            ApplicationName = ApplicationName,
+        });
 
-		foreach (var sheet in spreadsheet.Sheets)
-		{
-			var sheetTitle = sheet.Properties.Title;
-			var rowData = sheet.Data?.FirstOrDefault()?.RowData;
-			if (rowData == null) continue;
+        // Calculate correct range based on data shape
+        int rowCount = spreadsheet.Values?.Count ?? 0;
+        int colCount = spreadsheet.Values?.Max(r => r.Count) ?? 0;
+        if (rowCount == 0 || colCount == 0)
+        {
+            Console.WriteLine("No data to update.");
+            return;
+        }
+        string endCol = GetExcelColumnName(colCount);
+        string range = $"{_sheetTitle}!A1:{endCol}{rowCount}";
+        spreadsheet.Range = range;
 
-			// Convert RowData to IList<IList<object>>
-			var values = new List<IList<object>>();
-			foreach (var row in rowData)
-			{
-				var rowValues = new List<object>();
-				if (row.Values != null)
-				{
-					foreach (var cell in row.Values)
-					{
-						rowValues.Add(cell.FormattedValue ?? "");
-					}
-				}
-				values.Add(rowValues);
-			}
-
-			// Calculate range (A1 notation)
-			int rowCount = values.Count;
-			int colCount = values.Max(r => r.Count);
-			string endCol = GetExcelColumnName(colCount);
-			string range = $"{sheetTitle}!A1:{endCol}{rowCount}";
-
-			var valueRange = new ValueRange
-			{
-				Range = range,
-				Values = values
-			};
-
-			var updateRequest = sheetsService.Spreadsheets.Values.Update(valueRange, spreadsheet.SpreadsheetId, range);
-			updateRequest.ValueInputOption = SpreadsheetsResource.ValuesResource.UpdateRequest.ValueInputOptionEnum.USERENTERED;
-			var updateResponse = updateRequest.Execute();
-			Console.WriteLine($"Updated {updateResponse.UpdatedCells} cells in range {range} of spreadsheet {spreadsheet.SpreadsheetId}.");
-		}
-	}
+        var updateRequest = sheetsService.Spreadsheets.Values.Update(spreadsheet, _spreadsheetId, range);
+        updateRequest.ValueInputOption = SpreadsheetsResource.ValuesResource.UpdateRequest.ValueInputOptionEnum.USERENTERED;
+        var updateResponse = updateRequest.Execute();
+        Console.WriteLine($"Updated {updateResponse.UpdatedCells} cells in range {range} of spreadsheet {_spreadsheetId}.");
+    }
 
 	// Helper to get Excel column name from index (1-based)
 	private string GetExcelColumnName(int columnNumber)
@@ -244,4 +286,5 @@ public class GoogleDriveRepository
 			}
 		}*/
 	}
+
 }

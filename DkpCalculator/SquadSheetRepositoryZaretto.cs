@@ -72,6 +72,10 @@ namespace SquadSheets
             }  
         }
 
+        public void PopulateRaidDetails(SquadSheetContext context)
+        {
+            throw new NotImplementedException();
+        }
 
         public void UpdateDkp(SquadSheetContext context)
         {

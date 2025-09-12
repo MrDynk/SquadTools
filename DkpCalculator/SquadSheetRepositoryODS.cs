@@ -254,5 +254,10 @@ namespace SquadSheets
             }
             return -1; // Not found
         }
+
+        public void PopulateRaidDetails(SquadSheetContext context)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

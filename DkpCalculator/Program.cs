@@ -29,19 +29,7 @@ string logFileName = Path.GetFileName(logFilePath);
 Console.WriteLine($"Parsed log file name: {logFileName}");
 
 
-
-GoogleDriveRepository googleDriveRepository = new GoogleDriveRepository();
-
 string squadSheetPath = args[1];
-//googleDriveRepository.DownloadFile(ApplicationOptions.DKPFileName, squadSheetPath);
-// if (!File.Exists(squadSheetPath))
-// {
-//     Console.WriteLine($"SquadSheet not found: {squadSheetPath}");
-//     return;
-// }
-
-var squadsheet = googleDriveRepository.DownloadGoogleSheet(ApplicationOptions.DKPFileName);
-
 
 
 //prompt user for start and end time
@@ -78,6 +66,10 @@ var squadSheetContext = new SquadSheetContext
     SquadPlayers = new List<Player>()
 };
 
+
+
+GoogleDriveRepository googleDriveRepository = new GoogleDriveRepository(ApplicationOptions.DKPFileName, squadSheetContext);
+var squadsheet = googleDriveRepository.DownloadGoogleSheet(ApplicationOptions.DKPFileName, squadSheetContext);
 // Initialize repositories and calculator
 ILogRepository logRepository = new TwowLogRepository(logFilePath);
 //ISquadSheetRepository squadSheetRepository = new SquadSheetRepositoryZaretto(squadSheetPath, squadSheetContext);
@@ -105,9 +97,13 @@ if(squadSheetContext.RaidEnd > squadSheetContext.BossesDefeated.Last().KillTime)
 dkpCalculator.CalculateDkp(squadSheetContext);
 
 ConsoleReporter reporter = new ConsoleReporter();
-reporter.Report(squadSheetContext);
 
+squadSheetRepository.PopulateRaidDetails(squadSheetContext);
 squadSheetRepository.UpdateDkp(squadSheetContext);
+/*
+reporter.Report(squadSheetContext);
+*/
+
 
 //googleDriveRepository.UploadFileSharedWithMe(ApplicationOptions.DKPFileName, squadSheetPath);
 
