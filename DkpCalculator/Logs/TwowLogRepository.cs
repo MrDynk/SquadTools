@@ -228,7 +228,7 @@ namespace Logs
             var parts = line.Split('&');
             if (parts.Length > 1)
             {
-                playerName = parts[1].Trim();
+                playerName = parts[1].Trim().ToLower();
                 if (string.IsNullOrEmpty(playerName))
                 {
                     Console.WriteLine($"Player name is empty in line: {line}");
@@ -260,7 +260,7 @@ namespace Logs
                 zoneName = parts[1].Trim();
                 if (string.IsNullOrEmpty(zoneName))
                 {
-                    Console.WriteLine($"Zone name is empty in line: {line}");
+                    //Console.WriteLine($"Zone name is empty in line: {line}");
                     return string.Empty;
                 }
 

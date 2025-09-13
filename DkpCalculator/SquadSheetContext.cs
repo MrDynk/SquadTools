@@ -19,6 +19,8 @@ public class SquadSheetContext
         }
     }
     public int PotentialDkpEarnedForRaid { get; set; }
+    public int RaidDkpAwardedByLeadership { get; set; }
+    public required Dictionary<string, int> PlayerDkpAwardedByLeadership { get; set; }
     //log data
     public required List<Tuple<DateTime, string>> ZoneInfo { get; set; }
     public required List<Tuple<DateTime, string>> CombatantInfo { get; set; }

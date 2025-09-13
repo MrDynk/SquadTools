@@ -57,11 +57,32 @@ namespace SquadSheets
                     AliasTimeStamps = new Dictionary<string, List<DateTime>>(),
                     ActivityGaps = new List<PlayerActivityGap>(),
                     DkpDeductions = new List<DkpDeduction>(),
-                    RaidEarnedDkp = context.PotentialDkpEarnedForRaid
+                    RaidEarnedDkp = 0,
+                    LeadershipAwardedDkpList = new List<LeadershipAwardedDkp>(),
                 };
-                List<string> playerAliases = playerName.Split('/').Select(a => a.Trim()).ToList();
+
+                if (context.RaidDkpAwardedByLeadership > 0)
+                { 
+                    player.LeadershipAwardedDkpList.Add(new LeadershipAwardedDkp
+                    {
+                        Reason = AwardEnum.RaidAddition,
+                        Amount = context.RaidDkpAwardedByLeadership
+                    });
+                }
+
+                List<string> playerAliases = playerName.Split('/').Select(a => a.ToLower().Trim()).ToList();
                 foreach (var alias in playerAliases)
+                {
                     player.AliasTimeStamps.Add(alias, new List<DateTime>());
+                    if(context.PlayerDkpAwardedByLeadership != null && context.PlayerDkpAwardedByLeadership.TryGetValue(alias, out var dkpFromLeadership))
+                    {
+                        player.LeadershipAwardedDkpList.Add(new LeadershipAwardedDkp
+                        {
+                            Reason = AwardEnum.PlayerAddition,
+                            Amount = dkpFromLeadership
+                        });
+                    }
+                }
 
                 context.SquadPlayers.Add(player);
             }

@@ -1,8 +1,5 @@
 ﻿// See https://aka.ms/new-console-template for more information
-using System;
-using System.IO;
-using System.Linq;
-using System.Collections.Generic;
+
 using System.Text.RegularExpressions;
 using Logs;
 using SquadSheets;
@@ -37,6 +34,41 @@ foreach (var logFilePath in logFiles)
         Console.WriteLine($"Filename format invalid: {fileName}");
         continue;
     }
+
+
+    // Prompt user for DKP for whole raid
+    Console.Write("Add DKP for whole raid? (Y/N): ");
+    string addDkpWholeRaid = Console.ReadLine()?.Trim().ToUpperInvariant();
+    int dkpWholeRaidAmount = 0;
+    if (addDkpWholeRaid == "Y")
+    {
+        Console.Write("Amount?: ");
+        if (int.TryParse(Console.ReadLine(), out int amt))
+            dkpWholeRaidAmount = amt;
+    }
+
+    // Prompt user for DKP for specific players
+    Console.Write("Add DKP For Players? (Y/N): ");
+    string addDkpForPlayers = Console.ReadLine()?.Trim().ToUpperInvariant();
+    Dictionary<string, int> playerDkp = new Dictionary<string, int>();
+    if (addDkpForPlayers == "Y")
+    {
+        Console.WriteLine("Players (format: {Name:Amount},{Name:Amount}): ");
+        string input = Console.ReadLine();
+        if (!string.IsNullOrWhiteSpace(input))
+        {
+            var entries = input.Split(',', StringSplitOptions.RemoveEmptyEntries);
+            foreach (var entry in entries)
+            {
+                var trimmed = entry.Trim().Trim('{', '}');
+                var parts = trimmed.Split(':', StringSplitOptions.RemoveEmptyEntries);
+                if (parts.Length == 2 && int.TryParse(parts[1], out int val))
+                {
+                    playerDkp[parts[0].ToLower()] = val;
+                }
+            }
+        }
+    }
     int month = int.Parse(match.Groups[1].Value);
     int day = int.Parse(match.Groups[2].Value);
     int startHour = int.Parse(match.Groups[3].Value.Substring(0, 2));
@@ -59,8 +91,12 @@ foreach (var logFilePath in logFiles)
         Loot = new List<Loot>(),
         SquadPlayers = new List<Player>(),
         AliasTimeStamps = new Dictionary<string, List<DateTime>>(),
-        BossesDefeated = new List<Boss>()
+        BossesDefeated = new List<Boss>(),
+        RaidDkpAwardedByLeadership = dkpWholeRaidAmount,
+        PlayerDkpAwardedByLeadership = playerDkp
     };
+
+
 
     GoogleSheetRepository googleSheetRepository = new GoogleSheetRepository();
     var sheetTokens = new List<string> { "Program", raidStart.ToString("MMM"), raidStart.ToString("yy") };
@@ -75,20 +111,19 @@ foreach (var logFilePath in logFiles)
     logRepository.GetPlayerActivity(squadSheetContext);
     PlayerHydrater.PopulateSquadPlayerDetailsForRaid(squadSheetContext);
 
-    if(squadSheetContext.RaidEnd > squadSheetContext.BossesDefeated.Last().KillTime)
+    if (squadSheetContext.RaidEnd > squadSheetContext.BossesDefeated.Last().KillTime)
     {
         Console.WriteLine(" ");
-        Console.WriteLine(" ");
-        Console.WriteLine($"Warning: Raid end time {squadSheetContext.RaidEnd} is after {squadSheetContext.BossesDefeated.Last().Name} kill time {squadSheetContext.BossesDefeated.Last().KillTime}. Adjusting raid end time to last boss kill time.");
-        Console.WriteLine(" "); 
+        Console.WriteLine($"Raid end time {squadSheetContext.RaidEnd} is after {squadSheetContext.BossesDefeated.Last().Name} kill time {squadSheetContext.BossesDefeated.Last().KillTime}. Adjusting raid end time to last boss kill time.");
         Console.WriteLine(" ");
         squadSheetContext.RaidEnd = squadSheetContext.BossesDefeated.Last().KillTime;
     }
 
+
     dkpCalculator.CalculateDkp(squadSheetContext);
     squadSheetRepository.PopulateRaidDetails(squadSheetContext);
     squadSheetRepository.UpdateDkp(squadSheetContext);
-    googleSheetRepository.UpdateGoogleSheet(sheetTokens,squadSheetContext,squadsheet);
+    googleSheetRepository.UpdateGoogleSheet(sheetTokens, squadSheetContext, squadsheet);
 
     sheetTokens.Add("Audit");
     var auditSquadsheet = googleSheetRepository.DownloadGoogleSheet(sheetTokens, squadSheetContext);
@@ -99,7 +134,7 @@ foreach (var logFilePath in logFiles)
     // Move processed file to LogsFinishedParse
     string destPath = Path.Combine(finishedDir, Path.GetFileName(logFilePath));
     File.Move(logFilePath, destPath, overwrite: true);
-    Console.WriteLine($"Processed and moved: {logFilePath} -> {destPath}");
+    //Console.WriteLine($"Processed and moved: {logFilePath} -> {destPath}");
 }
 
 

@@ -1,6 +1,8 @@
 public class ApplicationOptions
 {
-    public const int RowsRemovedFromAuditSheet = 7;
+    public const int ColumnsRemovedFromAuditSheet = 7;
+    public const int auditSheetAdditionalDkpRow = 2;
+    public const int auditRowPlayerIndexOffset = 1;
     public const int raidDateRowIndex = 0;
     public const int RaidIdRowIndex = 1;
     public const int PlayerRosterColumnIndex = 0;
@@ -12,7 +14,7 @@ public class ApplicationOptions
 
     public const int DeathOnFinalBossBuffer = 10;
 
-    public const string DKPSpreadSheetName = "SQUAD DKP test";
+    public const string DKPSpreadSheetName = "SQUAD DKP";
     //public const string DKPFileName = "DKPOnMyDrive";
     
     public static readonly Dictionary<string, string> ZoneToAbbrevLookup = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)

@@ -12,15 +12,31 @@ public class AuditSheetRepository
     public void Update(SquadSheetContext context)
     {
         var sb = new StringBuilder();
+        var raidColumnInAuditSheet = context.RaidColumnIdx - ApplicationOptions.ColumnsRemovedFromAuditSheet;
+        if (context.RaidDkpAwardedByLeadership > 0)
+        {
+            var auditSheetAdditionalDkpRow = ApplicationOptions.auditSheetAdditionalDkpRow;
+            var row = _auditSheet.Values[auditSheetAdditionalDkpRow];
+
+            if (row.Count < raidColumnInAuditSheet)
+            {
+                // If the row doesn't have enough columns, add empty cells
+                for (int j = row.Count; j <= raidColumnInAuditSheet; j++)
+                {
+                    row.Add(string.Empty);
+                }
+            }
+            row[raidColumnInAuditSheet] = context.RaidDkpAwardedByLeadership;
+        }
 
         foreach (var player in context.SquadPlayers)
         {
-           /*if (player.FatLoot.Count > 0) sb.AppendLine("Loot:");
-            foreach (var loot in player.FatLoot)
-            {
-                sb.AppendLine($"    {loot.Item}");
-            }
-            */
+            /*if (player.FatLoot.Count > 0) sb.AppendLine("Loot:");
+             foreach (var loot in player.FatLoot)
+             {
+                 sb.AppendLine($"    {loot.Item}");
+             }
+             */
             if (player.DkpDeductions.Count > 0) sb.AppendLine("Deduct:");
             foreach (var deduction in player.DkpDeductions)
             {
@@ -33,10 +49,23 @@ public class AuditSheetRepository
                 sb.AppendLine($"{deduction.Amount}");
                 sb.AppendLine($"==========");
             }
-            var row = _auditSheet.Values[player.SquadSheetLocation];
+            if (player.LeadershipAwardedDkpList.FirstOrDefault(x => x.Reason == AwardEnum.PlayerAddition) != null) sb.AppendLine("Awarded:");
+            foreach (var award in player.LeadershipAwardedDkpList)
+            {
+                if (award.Reason != AwardEnum.RaidAddition)
+                {
+                    //sb.AppendLine($"Reason:");
+                    sb.AppendLine($"==========");
+                    sb.AppendLine($"{award.Reason.ToString()}");
+                    sb.AppendLine($"{award.Amount}");
+                    sb.AppendLine($"==========");
+                }
+
+            }
+            var row = _auditSheet.Values[player.SquadSheetLocation + ApplicationOptions.auditRowPlayerIndexOffset];
             if (row == null) continue;
 
-            var raidColumnInAuditSheet = context.RaidColumnIdx - ApplicationOptions.RowsRemovedFromAuditSheet;
+            
             if (row.Count < raidColumnInAuditSheet)
             {
                 // If the row doesn't have enough columns, add empty cells

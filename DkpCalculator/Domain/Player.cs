@@ -9,6 +9,7 @@ public class Player
     public required List<Loot> FatLoot { get; set; }
 
     public required List<DkpDeduction> DkpDeductions { get; set; }
+    public required List<LeadershipAwardedDkp> LeadershipAwardedDkpList { get; set; }
     public required Dictionary<string, List<DateTime>> AliasTimeStamps { get; set; }
 
     public required List<PlayerActivityGap> ActivityGaps { get; set; }

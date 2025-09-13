@@ -108,7 +108,7 @@ public class GoogleSheetRepository
         
 		if (sheet == null)
 			throw new Exception($"No sheet found containing all tokens: {string.Join(", ", sheetTokens)}");
-		Console.WriteLine($"Sheet Title: {sheet.Properties.Title}, Sheet ID: {sheet.Properties.SheetId}");
+		//Console.WriteLine($"Sheet Title: {sheet.Properties.Title}, Sheet ID: {sheet.Properties.SheetId}");
 
 		var sheetTitle = sheet.Properties.Title;
 		var spreadsheetId = spreadsheet.SpreadsheetId;
