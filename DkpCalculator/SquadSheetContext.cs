@@ -2,9 +2,8 @@ using System.Reflection.Metadata;
 
 public class SquadSheetContext
 {
-
-    public List<Boss> BossesDefeated { get; set; }
-    public int RaidColumn = -1;
+    public required List<Boss> BossesDefeated { get; set; }
+    public int RaidColumnIdx = -1;
     public DateTime RaidStart { get; set; }
     public DateTime RaidEnd { get; set; }
 
@@ -21,18 +20,15 @@ public class SquadSheetContext
     }
     public int PotentialDkpEarnedForRaid { get; set; }
     //log data
-    public List<Tuple<DateTime, string>> ZoneInfo { get; set; }
-    public List<Tuple<DateTime, string>> CombatantInfo { get; set; }
-    public List<Tuple<DateTime, string>> Deaths { get; set; }
+    public required List<Tuple<DateTime, string>> ZoneInfo { get; set; }
+    public required List<Tuple<DateTime, string>> CombatantInfo { get; set; }
+    public required List<Tuple<DateTime, string>> Deaths { get; set; }
 
-    public Dictionary<string, List<DateTime>> AliasTimeStamps { get; set; }
-    public List<Loot> Loot { get; set; }
+    public required Dictionary<string, List<DateTime>> AliasTimeStamps { get; set; }
+    public required List<Loot> Loot { get; set; }
 
     //squad sheet data
     //public List<Tuple<int, string>> SquadSheetPlayerRoster { get; set; }
 
-    public List<Player> SquadPlayers { get; set; }
-
-
-  
+    public required List<Player> SquadPlayers { get; set; }
 }

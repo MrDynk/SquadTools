@@ -1,7 +1,10 @@
 public class ApplicationOptions
 {
-    public const int RaidIdRowIndex = 0;
+    public const int RowsRemovedFromAuditSheet = 7;
+    public const int raidDateRowIndex = 0;
+    public const int RaidIdRowIndex = 1;
     public const int PlayerRosterColumnIndex = 0;
+    public const int FirstPlayerRowIndex = 2;
     public const int MonthlyEarnedDkpColumnIndex = 2;
     public const int MonthlySpentDkpColumnIndex = 4;
     public const int AvailableDkpColumnIndex = 6;
@@ -9,20 +12,22 @@ public class ApplicationOptions
 
     public const int DeathOnFinalBossBuffer = 10;
 
-    public const string DKPFileName = "DKPFromCru";
+    public const string DKPSpreadSheetName = "SQUAD DKP test";
     //public const string DKPFileName = "DKPOnMyDrive";
     
     public static readonly Dictionary<string, string> ZoneToAbbrevLookup = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
     {
         { "naxxramas", "Naxx" },
-        {"ahn'qiraj","TAQ"}
+        {"ahn'qiraj","TAQ"},
+        {"tower of karazhan","uKara" }
 
     };
 
         public static readonly Dictionary<string, int> DkpPotential = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase)
     {
         { "naxxramas", 6 },
-        {"ahn'qiraj", 6 }
+        {"ahn'qiraj", 6 },
+        {"tower of karazhan", 6 }
 
     };
 
@@ -46,6 +51,17 @@ public class ApplicationOptions
                 "Emperor Vek'nilash",
                 "Ouro",
                 "C'Thun"
+            }},
+            {"tower of karazhan", new List<string> {
+                "Keeper Gnarlmoon",
+                "Ley-Watcher Incantagos",
+                "Anomalus",
+                "Arcane Warden",
+                "Mana Confluence",
+                "Echo of Medivh",
+                "Shadow Councilor Yath'amon",
+                "The Curator (Upper)",
+                "Viz'aduum the Watcher"
             } }
         };
 }

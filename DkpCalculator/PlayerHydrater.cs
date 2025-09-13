@@ -61,7 +61,7 @@ public class PlayerHydrater
 
             if (player == null)
             {
-                Console.WriteLine($"Looted item for non squad player {item.PlayerName} Item: {item.Item} Time: {item.TimeStamp}");
+                //Console.WriteLine($"Looted item for non squad player {item.PlayerName} Item: {item.Item} Time: {item.TimeStamp}");
                 continue;
             }
             player.FatLoot.Add(item);
