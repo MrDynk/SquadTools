@@ -13,6 +13,7 @@
     <PackageReference Include="ExcelDataReader" Version="3.7.0" />
     <PackageReference Include="ExcelDataReader.DataSet" Version="3.7.0" />
     <PackageReference Include="Google.Apis.Drive.v3" Version="1.70.0.3893" />
+    <PackageReference Include="Google.Apis.Sheets.v4" Version="1.70.0.3819" />
     <PackageReference Include="NPOI" Version="2.7.4" />
     <PackageReference Include="OdsReaderWriter" Version="1.0.14" />
     <PackageReference Include="System.Text.Encoding.CodePages" Version="9.0.8" />

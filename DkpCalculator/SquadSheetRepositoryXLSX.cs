@@ -130,9 +130,9 @@ namespace SquadSheets
                 var worksheetPart = (DocumentFormat.OpenXml.Packaging.WorksheetPart)workbookPart.GetPartById(sheet.Id);
                 var sheetData = worksheetPart.Worksheet.GetFirstChild<DocumentFormat.OpenXml.Spreadsheet.SheetData>();
 
-            //find row column
-            int RaidIdRowIndexOXml = ApplicationOptions.RaidIdRowIndex; 
-            var RaidIdRow = sheetData.Elements<DocumentFormat.OpenXml.Spreadsheet.Row>().FirstOrDefault(r => r.RowIndex == (uint)RaidIdRowIndexOXml);
+                //find row column
+                int RaidIdRowIndexOXml = ApplicationOptions.RaidIdRowIndex;
+                var RaidIdRow = sheetData.Elements<DocumentFormat.OpenXml.Spreadsheet.Row>().FirstOrDefault(r => r.RowIndex == (uint)RaidIdRowIndexOXml);
 
                 for (int i = 0; i < context.SquadPlayers.Count; i++)
                 {
@@ -156,30 +156,30 @@ namespace SquadSheets
 
             // Helper to update a cell in a row (colIndex is 1-based)
             private void UpdateCell(DocumentFormat.OpenXml.Spreadsheet.Row row, int colIndex, string value)
+        {
+            string cellRef = GetExcelColumnName(colIndex) + row.RowIndex;
+            var cell = row.Elements<DocumentFormat.OpenXml.Spreadsheet.Cell>().FirstOrDefault(c => c.CellReference == cellRef);
+            if (cell == null)
             {
-                string cellRef = GetExcelColumnName(colIndex) + row.RowIndex;
-                var cell = row.Elements<DocumentFormat.OpenXml.Spreadsheet.Cell>().FirstOrDefault(c => c.CellReference == cellRef);
-                if (cell == null)
-                {
-                    cell = new DocumentFormat.OpenXml.Spreadsheet.Cell() { CellReference = cellRef };
-                    row.Append(cell);
-                }
-                cell.DataType = DocumentFormat.OpenXml.Spreadsheet.CellValues.String;
-                cell.CellValue = new DocumentFormat.OpenXml.Spreadsheet.CellValue(value);
+                cell = new DocumentFormat.OpenXml.Spreadsheet.Cell() { CellReference = cellRef };
+                row.Append(cell);
             }
+            cell.DataType = DocumentFormat.OpenXml.Spreadsheet.CellValues.String;
+            cell.CellValue = new DocumentFormat.OpenXml.Spreadsheet.CellValue(value);
+        }
 
-            // Helper to get Excel column name from index (1-based)
-            private string GetExcelColumnName(int columnNumber)
+        // Helper to get Excel column name from index (1-based)
+        private string GetExcelColumnName(int columnNumber)
+        {
+            string columnName = "";
+            while (columnNumber > 0)
             {
-                string columnName = "";
-                while (columnNumber > 0)
-                {
-                    int modulo = (columnNumber - 1) % 26;
-                    columnName = Convert.ToChar(65 + modulo) + columnName;
-                    columnNumber = (columnNumber - modulo) / 26;
-                }
-                return columnName;
+                int modulo = (columnNumber - 1) % 26;
+                columnName = Convert.ToChar(65 + modulo) + columnName;
+                columnNumber = (columnNumber - modulo) / 26;
             }
+            return columnName;
+        }
 
         private int FindRaidColumn(SquadSheetContext context, DataTable table)
         {
@@ -202,6 +202,11 @@ namespace SquadSheets
 
             }
             return -1; // Not found
+        }
+
+        public void PopulateRaidDetails(SquadSheetContext context)
+        {
+            throw new NotImplementedException();
         }
     }
 }

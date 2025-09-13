@@ -215,6 +215,23 @@
           }
         }
       },
+      "Google.Apis.Sheets.v4/1.70.0.3819": {
+        "type": "package",
+        "dependencies": {
+          "Google.Apis": "1.70.0",
+          "Google.Apis.Auth": "1.70.0"
+        },
+        "compile": {
+          "lib/net6.0/Google.Apis.Sheets.v4.dll": {
+            "related": ".pdb;.xml"
+          }
+        },
+        "runtime": {
+          "lib/net6.0/Google.Apis.Sheets.v4.dll": {
+            "related": ".pdb;.xml"
+          }
+        }
+      },
       "ICSharpCode.SharpZipLib.dll/0.85.4.369": {
         "type": "package",
         "compile": {
@@ -843,6 +860,28 @@
         "lib/netstandard2.0/Google.Apis.Drive.v3.xml"
       ]
     },
+    "Google.Apis.Sheets.v4/1.70.0.3819": {
+      "sha512": "GiezS2d/gMhP7DIOuBFl2FitYPKARpgnRpdXSy4HUBjlC724fMhSqIoiEx+KgUzn5+7dlnJSycjD1q9JgtB8iQ==",
+      "type": "package",
+      "path": "google.apis.sheets.v4/1.70.0.3819",
+      "files": [
+        ".nupkg.metadata",
+        ".signature.p7s",
+        "LICENSE",
+        "NuGetIcon.png",
+        "google.apis.sheets.v4.1.70.0.3819.nupkg.sha512",
+        "google.apis.sheets.v4.nuspec",
+        "lib/net462/Google.Apis.Sheets.v4.dll",
+        "lib/net462/Google.Apis.Sheets.v4.pdb",
+        "lib/net462/Google.Apis.Sheets.v4.xml",
+        "lib/net6.0/Google.Apis.Sheets.v4.dll",
+        "lib/net6.0/Google.Apis.Sheets.v4.pdb",
+        "lib/net6.0/Google.Apis.Sheets.v4.xml",
+        "lib/netstandard2.0/Google.Apis.Sheets.v4.dll",
+        "lib/netstandard2.0/Google.Apis.Sheets.v4.pdb",
+        "lib/netstandard2.0/Google.Apis.Sheets.v4.xml"
+      ]
+    },
     "ICSharpCode.SharpZipLib.dll/0.85.4.369": {
       "sha512": "HrJHR5IQoTXXQZgoGZZiu2oYw7V4FdjhwVLwWhV4G+9Xe9wo4MB+n7OaG96efyEJ2PFm4KhCbWNr54HWFdyt2A==",
       "type": "package",
@@ -1353,6 +1392,7 @@
       "ExcelDataReader >= 3.7.0",
       "ExcelDataReader.DataSet >= 3.7.0",
       "Google.Apis.Drive.v3 >= 1.70.0.3893",
+      "Google.Apis.Sheets.v4 >= 1.70.0.3819",
       "NPOI >= 2.7.4",
       "OdsReaderWriter >= 1.0.14",
       "System.Text.Encoding.CodePages >= 9.0.8"
@@ -1420,6 +1460,10 @@
           "Google.Apis.Drive.v3": {
             "target": "Package",
             "version": "[1.70.0.3893, )"
+          },
+          "Google.Apis.Sheets.v4": {
+            "target": "Package",
+            "version": "[1.70.0.3819, )"
           },
           "NPOI": {
             "target": "Package",

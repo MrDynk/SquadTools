@@ -64,6 +64,10 @@
               "target": "Package",
               "version": "[1.70.0.3893, )"
             },
+            "Google.Apis.Sheets.v4": {
+              "target": "Package",
+              "version": "[1.70.0.3819, )"
+            },
             "NPOI": {
               "target": "Package",
               "version": "[2.7.4, )"

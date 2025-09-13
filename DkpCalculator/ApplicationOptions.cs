@@ -10,6 +10,7 @@ public class ApplicationOptions
     public const int DeathOnFinalBossBuffer = 10;
 
     public const string DKPFileName = "DKPFromCru";
+    //public const string DKPFileName = "DKPOnMyDrive";
     
     public static readonly Dictionary<string, string> ZoneToAbbrevLookup = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
     {
