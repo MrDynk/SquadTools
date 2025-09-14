@@ -8,12 +8,13 @@ namespace SquadSheets
 {
     public class SquadSheetRepositoryGoogleSheet : ISquadSheetRepository
     {
-
+        private readonly ApplicationOptions _options;
         private readonly ValueRange _squadSheet;
 
-        public SquadSheetRepositoryGoogleSheet(ValueRange squadSheet)
+        public SquadSheetRepositoryGoogleSheet(ValueRange squadSheet, ApplicationOptions options)
         {
             _squadSheet = squadSheet;
+            _options = options;
         }
 
 
@@ -35,17 +36,17 @@ namespace SquadSheets
             if (_squadSheet.Values == null)
                 throw new Exception("No data found in the sheet.");
 
-            for (int i = ApplicationOptions.FirstPlayerRowIndex; i < _squadSheet.Values.Count; i++) 
+            for (int i = _options.FirstPlayerRowIndex; i < _squadSheet.Values.Count; i++) 
             {
                 var row = _squadSheet.Values[i];
-                if (row == null || row.Count <= ApplicationOptions.PlayerRosterColumnIndex)
+                if (row == null || row.Count <= _options.PlayerRosterColumnIndex)
                     break;
-                string playerName = row[ApplicationOptions.PlayerRosterColumnIndex].ToString();
+                string playerName = row[_options.PlayerRosterColumnIndex].ToString();
                 if (string.IsNullOrEmpty(playerName))
                     break;
-                var monthlySpentDkp = row.ElementAtOrDefault(ApplicationOptions.MonthlySpentDkpColumnIndex)?.ToString();
-                var availableDkp = row.ElementAtOrDefault(ApplicationOptions.AvailableDkpColumnIndex)?.ToString();
-                var monthlyEarnedDkp = row.ElementAtOrDefault(ApplicationOptions.MonthlyEarnedDkpColumnIndex)?.ToString();
+                var monthlySpentDkp = row.ElementAtOrDefault(_options.MonthlySpentDkpColumnIndex)?.ToString();
+                var availableDkp = row.ElementAtOrDefault(_options.AvailableDkpColumnIndex)?.ToString();
+                var monthlyEarnedDkp = row.ElementAtOrDefault(_options.MonthlyEarnedDkpColumnIndex)?.ToString();
 
                 Player player = new Player
                 {
@@ -96,9 +97,9 @@ namespace SquadSheets
                 var row = _squadSheet.Values[player.SquadSheetLocation];
                 if (row == null) continue;
 
-                row[ApplicationOptions.AvailableDkpColumnIndex] = player.AvailableDkp.ToString();
-                row[ApplicationOptions.MonthlyEarnedDkpColumnIndex] = player.MonthlyEarnedDkp.ToString();
-                row[ApplicationOptions.MonthlySpentDkpColumnIndex] = player.MonthlySpentDkp.ToString();
+                row[_options.AvailableDkpColumnIndex] = player.AvailableDkp.ToString();
+                row[_options.MonthlyEarnedDkpColumnIndex] = player.MonthlyEarnedDkp.ToString();
+                row[_options.MonthlySpentDkpColumnIndex] = player.MonthlySpentDkp.ToString();
                 //raidColumnIdx is 1-based
                  int totalRows = row.Count;
                 int lastRowIdx = totalRows - 1;
@@ -129,7 +130,7 @@ namespace SquadSheets
             {
                 foreach (var zone in zonesInLog)
                 {
-                    if (!ApplicationOptions.ZoneToAbbrevLookup.TryGetValue(zone, out var abbrev))
+                    if (!_options.ZoneToAbbrevLookup.TryGetValue(zone, out var abbrev))
                     {
                         continue;
                     }

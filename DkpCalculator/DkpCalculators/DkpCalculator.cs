@@ -1,5 +1,10 @@
 public class DkpCalculator: IDkpCalculator
 {
+    private readonly ApplicationOptions _options;
+    public DkpCalculator(ApplicationOptions options)
+    {
+        _options = options;
+    }
     // Calculates DKP based on the provided contexts
     public void CalculateDkp(SquadSheetContext squadSheetContext)
     {
@@ -10,7 +15,7 @@ public class DkpCalculator: IDkpCalculator
         }
     }
 
-    private static void ProcessAwards(SquadSheetContext squadSheetContext, Player player)
+    private void ProcessAwards(SquadSheetContext squadSheetContext, Player player)
     {
         player.RaidEarnedDkp = squadSheetContext.PotentialDkpEarnedForRaid;
         foreach (var award in player.LeadershipAwardedDkpList)
@@ -21,7 +26,7 @@ public class DkpCalculator: IDkpCalculator
         player.AvailableDkp += player.RaidEarnedDkp;
     }
 
-    private static void ProcessDeductions(SquadSheetContext squadSheetContext, Player player)
+    private void ProcessDeductions(SquadSheetContext squadSheetContext, Player player)
     {
         var sortedMergedTimestamps = player.AliasTimeStamps.Values.SelectMany(t => t).OrderBy(ts => ts).ToList();
         DateTime firstTimestamp = sortedMergedTimestamps.FirstOrDefault();
@@ -38,7 +43,7 @@ public class DkpCalculator: IDkpCalculator
             player.RaidEarnedDkp -= 1;
 
         }
-        if (squadSheetContext.RaidEnd - lastTimestamp > TimeSpan.FromMinutes(ApplicationOptions.DeathOnFinalBossBuffer))
+        if (squadSheetContext.RaidEnd - lastTimestamp > TimeSpan.FromMinutes(_options.DeathOnFinalBossBuffer))
         {
             DkpDeduction dkpDeduction = new DkpDeduction
             {

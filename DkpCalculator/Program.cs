@@ -1,8 +1,9 @@
-﻿// See https://aka.ms/new-console-template for more information
-
+﻿
 using System.Text.RegularExpressions;
 using Logs;
 using SquadSheets;
+using Microsoft.Extensions.Configuration;
+
 
 
 /*
@@ -21,9 +22,17 @@ if (!Directory.Exists(awaitingDir)) Directory.CreateDirectory(awaitingDir);
 if (!Directory.Exists(finishedDir)) Directory.CreateDirectory(finishedDir);
 
 var logFiles = Directory.GetFiles(awaitingDir, "*.txt");
+
+
+// Load application options from appsettings.json using Microsoft.Extensions.Configuration
+var config = new ConfigurationBuilder()
+    .SetBasePath(Directory.GetCurrentDirectory())
+    .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
+    .Build();
+var appOptions = config.GetSection("ApplicationOptions").Get<ApplicationOptions>()!;
+
 foreach (var logFilePath in logFiles)
 {
-
     // Example filename: 9-10_2044_2309_Naxx.txt
     string fileName = Path.GetFileNameWithoutExtension(logFilePath);
     Console.WriteLine($"Processing file: {fileName}");
@@ -35,10 +44,9 @@ foreach (var logFilePath in logFiles)
         continue;
     }
 
-
     // Prompt user for DKP for whole raid
     Console.Write("Add DKP for whole raid? (Y/N): ");
-    string addDkpWholeRaid = Console.ReadLine()?.Trim().ToUpperInvariant();
+    string? addDkpWholeRaid = Console.ReadLine()?.Trim().ToUpperInvariant();
     int dkpWholeRaidAmount = 0;
     if (addDkpWholeRaid == "Y")
     {
@@ -49,12 +57,12 @@ foreach (var logFilePath in logFiles)
 
     // Prompt user for DKP for specific players
     Console.Write("Add DKP For Players? (Y/N): ");
-    string addDkpForPlayers = Console.ReadLine()?.Trim().ToUpperInvariant();
+    string? addDkpForPlayers = Console.ReadLine()?.Trim().ToUpperInvariant();
     Dictionary<string, int> playerDkp = new Dictionary<string, int>();
     if (addDkpForPlayers == "Y")
     {
         Console.WriteLine("Players (format: {Name:Amount},{Name:Amount}): ");
-        string input = Console.ReadLine();
+    string? input = Console.ReadLine();
         if (!string.IsNullOrWhiteSpace(input))
         {
             var entries = input.Split(',', StringSplitOptions.RemoveEmptyEntries);
@@ -96,15 +104,13 @@ foreach (var logFilePath in logFiles)
         PlayerDkpAwardedByLeadership = playerDkp
     };
 
-
-
-    GoogleSheetRepository googleSheetRepository = new GoogleSheetRepository();
+    GoogleSheetRepository googleSheetRepository = new GoogleSheetRepository(appOptions);
     var sheetTokens = new List<string> { "Program", raidStart.ToString("MMM"), raidStart.ToString("yy") };
     var squadsheet = googleSheetRepository.DownloadGoogleSheet(sheetTokens, squadSheetContext);
-    ILogRepository logRepository = new TwowLogRepository(logFilePath);
-    ISquadSheetRepository squadSheetRepository = new SquadSheetRepositoryGoogleSheet(squadsheet);
-    IDkpCalculator dkpCalculator = new DkpCalculator();
-    var PlayerHydrater = new PlayerHydrater();
+    ILogRepository logRepository = new TwowLogRepository(logFilePath, appOptions);
+    ISquadSheetRepository squadSheetRepository = new SquadSheetRepositoryGoogleSheet(squadsheet, appOptions);
+    IDkpCalculator dkpCalculator = new DkpCalculator(appOptions);
+    var PlayerHydrater = new PlayerHydrater(appOptions);
 
     logRepository.GetPriliminaryDataPoints(squadSheetContext);
     squadSheetRepository.GetRosterDetails(squadSheetContext);
@@ -119,7 +125,6 @@ foreach (var logFilePath in logFiles)
         squadSheetContext.RaidEnd = squadSheetContext.BossesDefeated.Last().KillTime;
     }
 
-
     dkpCalculator.CalculateDkp(squadSheetContext);
     squadSheetRepository.PopulateRaidDetails(squadSheetContext);
     squadSheetRepository.UpdateDkp(squadSheetContext);
@@ -127,7 +132,7 @@ foreach (var logFilePath in logFiles)
 
     sheetTokens.Add("Audit");
     var auditSquadsheet = googleSheetRepository.DownloadGoogleSheet(sheetTokens, squadSheetContext);
-    AuditSheetRepository auditSheetRepository = new AuditSheetRepository(auditSquadsheet);
+    AuditSheetRepository auditSheetRepository = new AuditSheetRepository(auditSquadsheet, appOptions);
     auditSheetRepository.Update(squadSheetContext);
     googleSheetRepository.UpdateGoogleSheet(sheetTokens, squadSheetContext, auditSquadsheet);
 

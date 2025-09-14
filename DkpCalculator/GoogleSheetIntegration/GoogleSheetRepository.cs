@@ -13,15 +13,40 @@ using System.CodeDom.Compiler;
 
 public class GoogleSheetRepository
 {
+	private readonly ApplicationOptions _options;
 	private readonly string[] Scopes = { DriveService.Scope.DriveFile, DriveService.Scope.DriveReadonly,DriveService.Scope.DriveAppdata,SheetsService.Scope.Spreadsheets };
 	private readonly string ApplicationName = "SquadToolsDkp";
 	private readonly Google.Apis.Drive.v3.Data.File? _file;
 	private SheetsService _sheetsService;
+	private List<string> _fileNames;
+	private readonly bool _useServiceAccount = true; // Set to false to use OAuth
 
-	//private string _sheetTitle;
-	//private string _spreadsheetId;
-    private List<string> _fileNames;
-    private readonly bool _useServiceAccount = true; // Set to false to use OAuth
+	public GoogleSheetRepository(ApplicationOptions options)
+	{
+		_options = options;
+		var driveService = GetDriveService();
+		var request = driveService.Files.List();
+		request.Q = $"trashed=false";
+		request.Fields = "files(id, name)";
+		var result = request.Execute();
+		_fileNames = result.Files.Select(f => f.Name).ToList();
+
+		_sheetsService = new SheetsService(new BaseClientService.Initializer
+		{
+			HttpClientInitializer = driveService.HttpClientInitializer,
+			ApplicationName = ApplicationName,
+		});
+
+		request = driveService.Files.List();
+		request.Q = $"name='{_options.DKPSpreadSheetName}' and mimeType='application/vnd.google-apps.spreadsheet' and trashed=false";
+		request.Fields = "files(id, name)";
+		result = request.Execute();
+
+		_file = result.Files?.FirstOrDefault();
+		if (_file == null)
+			throw new FileNotFoundException($"Google Sheet '{_options.DKPSpreadSheetName}' not found in Google Drive.");
+	}
+
 	private DriveService GetDriveService()
 	{
 		if (_useServiceAccount)
@@ -56,39 +81,6 @@ public class GoogleSheetRepository
 				ApplicationName = ApplicationName,
 			});
 		}
-	}
-
-    public GoogleSheetRepository()
-    {
-        var driveService = GetDriveService();
-        var request = driveService.Files.List();
-        request.Q = $"trashed=false";
-        request.Fields = "files(id, name)";
-        var result = request.Execute();
-        // get the list of files these credentials have access to
-        _fileNames = result.Files.Select(f => f.Name).ToList();
-       /* foreach (var f in result.Files)
-        {
-            Console.WriteLine($"- {f.Name}");
-        }
-		*/
-
-        // Use Sheets API to get the spreadsheet object
-        _sheetsService = new SheetsService(new BaseClientService.Initializer
-        {
-            HttpClientInitializer = driveService.HttpClientInitializer,
-            ApplicationName = ApplicationName,
-        });
-        
-               	
-        request = driveService.Files.List();
-		request.Q = $"name='{ApplicationOptions.DKPSpreadSheetName}' and mimeType='application/vnd.google-apps.spreadsheet' and trashed=false";
-		request.Fields = "files(id, name)";
-		 result = request.Execute();
-
-		_file = result.Files?.FirstOrDefault();
-		if (_file == null)
-			throw new FileNotFoundException($"Google Sheet '{ApplicationOptions.DKPSpreadSheetName}' not found in Google Drive.");          
 	}
 
 	public ValueRange DownloadGoogleSheet(List<string> sheetTokens, SquadSheetContext context)

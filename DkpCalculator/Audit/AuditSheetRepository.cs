@@ -3,19 +3,21 @@ using Google.Apis.Sheets.v4.Data;
 
 public class AuditSheetRepository
 {
+    private readonly ApplicationOptions _options;
     private readonly ValueRange _auditSheet;
 
-    public AuditSheetRepository(ValueRange auditSheet)
+    public AuditSheetRepository(ValueRange auditSheet, ApplicationOptions options)
     {
         _auditSheet = auditSheet;
+        _options = options;
     }
     public void Update(SquadSheetContext context)
     {
         var sb = new StringBuilder();
-        var raidColumnInAuditSheet = context.RaidColumnIdx - ApplicationOptions.ColumnsRemovedFromAuditSheet;
+    var raidColumnInAuditSheet = context.RaidColumnIdx - _options.ColumnsRemovedFromAuditSheet;
         if (context.RaidDkpAwardedByLeadership > 0)
         {
-            var auditSheetAdditionalDkpRow = ApplicationOptions.auditSheetAdditionalDkpRow;
+            var auditSheetAdditionalDkpRow = _options.auditSheetAdditionalDkpRow;
             var row = _auditSheet.Values[auditSheetAdditionalDkpRow];
 
             if (row.Count < raidColumnInAuditSheet)
@@ -62,7 +64,7 @@ public class AuditSheetRepository
                 }
 
             }
-            var row = _auditSheet.Values[player.SquadSheetLocation + ApplicationOptions.auditRowPlayerIndexOffset];
+            var row = _auditSheet.Values[player.SquadSheetLocation + _options.auditRowPlayerIndexOffset];
             if (row == null) continue;
 
             

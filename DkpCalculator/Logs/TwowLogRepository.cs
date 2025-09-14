@@ -6,11 +6,12 @@ namespace Logs
 {
     public class TwowLogRepository : ILogRepository
     {
-
+        private readonly ApplicationOptions _options;
         private string _logDirectory;
-        public TwowLogRepository(string logDirectory)
+        public TwowLogRepository(string logDirectory, ApplicationOptions options)
         {
             _logDirectory = logDirectory;
+            _options = options;
         }
         public void GetPriliminaryDataPoints(SquadSheetContext context)
         {
@@ -150,7 +151,7 @@ namespace Logs
             foreach (var zone in uniqueZones)
             {
                 // Find all bosses for the given zone
-                if (ApplicationOptions.DkpPotential.TryGetValue(zone, out var zoneDkp))
+                if (_options.DkpPotential.TryGetValue(zone, out var zoneDkp))
                 {
                     context.PotentialDkpEarnedForRaid += zoneDkp;
                 }
@@ -160,7 +161,7 @@ namespace Logs
         private void BuildPotentialBosses(string zone, List<(string,string)> potentialBosses)
         {
                 // Find all bosses for the given zone
-                if (ApplicationOptions.bossNames.TryGetValue(zone, out var bosses))
+                if (_options.bossNames.TryGetValue(zone, out var bosses))
                 {
                     potentialBosses.AddRange(bosses.Select(b => (b, zone)));
                 }
