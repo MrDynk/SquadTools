@@ -8,12 +8,13 @@ namespace SquadSheets
 {
     public class SquadSheetRepositoryGoogleSheet : ISquadSheetRepository
     {
-
+        private readonly ApplicationOptions _options;
         private readonly ValueRange _squadSheet;
 
-        public SquadSheetRepositoryGoogleSheet(ValueRange squadSheet)
+        public SquadSheetRepositoryGoogleSheet(ValueRange squadSheet, ApplicationOptions options)
         {
             _squadSheet = squadSheet;
+            _options = options;
         }
 
 
@@ -22,8 +23,12 @@ namespace SquadSheets
             if (_squadSheet.Values == null || _squadSheet.Values.Count == 0)
                 throw new Exception("No data found in the sheet.");
 
-            IList<object> headerRow =   _squadSheet.Values[0];
-            context.RaidColumn = FindRaidColumn(context, headerRow);
+            IList<object> dateHeaderRow =   _squadSheet.Values[0];
+            var dateColumnValue = context.RaidStart.ToString("M/d/yyyy");
+            List<int> matchingDateColumns = dateHeaderRow.Where(cell => cell.ToString().Contains(dateColumnValue)).Select(cell => dateHeaderRow.IndexOf(cell)).ToList();
+            IList<object> RaidNameHeaderRow =   _squadSheet.Values[1];
+
+            context.RaidColumnIdx = FindRaidColumn(context,  RaidNameHeaderRow, matchingDateColumns);
         }
 
         public void GetRosterDetails(SquadSheetContext context)
@@ -31,17 +36,17 @@ namespace SquadSheets
             if (_squadSheet.Values == null)
                 throw new Exception("No data found in the sheet.");
 
-            for (int i = 1; i < _squadSheet.Values.Count; i++) // skip header
+            for (int i = _options.FirstPlayerRowIndex; i < _squadSheet.Values.Count; i++) 
             {
                 var row = _squadSheet.Values[i];
-                if (row == null || row.Count <= ApplicationOptions.PlayerRosterColumnIndex)
+                if (row == null || row.Count <= _options.PlayerRosterColumnIndex)
                     break;
-                string playerName = row[ApplicationOptions.PlayerRosterColumnIndex].ToString();
+                string playerName = row[_options.PlayerRosterColumnIndex].ToString();
                 if (string.IsNullOrEmpty(playerName))
                     break;
-                var monthlySpentDkp = row.ElementAtOrDefault(ApplicationOptions.MonthlySpentDkpColumnIndex)?.ToString();
-                var availableDkp = row.ElementAtOrDefault(ApplicationOptions.AvailableDkpColumnIndex)?.ToString();
-                var monthlyEarnedDkp = row.ElementAtOrDefault(ApplicationOptions.MonthlyEarnedDkpColumnIndex)?.ToString();
+                var monthlySpentDkp = row.ElementAtOrDefault(_options.MonthlySpentDkpColumnIndex)?.ToString();
+                var availableDkp = row.ElementAtOrDefault(_options.AvailableDkpColumnIndex)?.ToString();
+                var monthlyEarnedDkp = row.ElementAtOrDefault(_options.MonthlyEarnedDkpColumnIndex)?.ToString();
 
                 Player player = new Player
                 {
@@ -52,12 +57,33 @@ namespace SquadSheets
                     FatLoot = new List<Loot>(),
                     AliasTimeStamps = new Dictionary<string, List<DateTime>>(),
                     ActivityGaps = new List<PlayerActivityGap>(),
-                    DkpDeductions = new List<Tuple<string, int>>(),
-                    RaidEarnedDkp = context.PotentialDkpEarnedForRaid
+                    DkpDeductions = new List<DkpDeduction>(),
+                    RaidEarnedDkp = 0,
+                    LeadershipAwardedDkpList = new List<LeadershipAwardedDkp>(),
                 };
-                List<string> playerAliases = playerName.Split('/').Select(a => a.Trim()).ToList();
+
+                if (context.RaidDkpAwardedByLeadership > 0)
+                { 
+                    player.LeadershipAwardedDkpList.Add(new LeadershipAwardedDkp
+                    {
+                        Reason = AwardEnum.RaidAddition,
+                        Amount = context.RaidDkpAwardedByLeadership
+                    });
+                }
+
+                List<string> playerAliases = playerName.Split('/').Select(a => a.ToLower().Trim()).ToList();
                 foreach (var alias in playerAliases)
+                {
                     player.AliasTimeStamps.Add(alias, new List<DateTime>());
+                    if(context.PlayerDkpAwardedByLeadership != null && context.PlayerDkpAwardedByLeadership.TryGetValue(alias, out var dkpFromLeadership))
+                    {
+                        player.LeadershipAwardedDkpList.Add(new LeadershipAwardedDkp
+                        {
+                            Reason = AwardEnum.PlayerAddition,
+                            Amount = dkpFromLeadership
+                        });
+                    }
+                }
 
                 context.SquadPlayers.Add(player);
             }
@@ -66,48 +92,55 @@ namespace SquadSheets
         public void UpdateDkp(SquadSheetContext context)
         {
 
-            for (int i = 0; i < context.SquadPlayers.Count; i++)
+            foreach (var player in context.SquadPlayers)
             {
-                var player = context.SquadPlayers[i];
                 var row = _squadSheet.Values[player.SquadSheetLocation];
                 if (row == null) continue;
 
-                row[ApplicationOptions.AvailableDkpColumnIndex] = player.AvailableDkp.ToString();
-                row[ApplicationOptions.MonthlyEarnedDkpColumnIndex] = player.MonthlyEarnedDkp.ToString();
-                row[ApplicationOptions.MonthlySpentDkpColumnIndex] = player.MonthlySpentDkp.ToString();
-                if (row.Count < context.RaidColumn)
+                row[_options.AvailableDkpColumnIndex] = player.AvailableDkp.ToString();
+                row[_options.MonthlyEarnedDkpColumnIndex] = player.MonthlyEarnedDkp.ToString();
+                row[_options.MonthlySpentDkpColumnIndex] = player.MonthlySpentDkp.ToString();
+                //raidColumnIdx is 1-based
+                 int totalRows = row.Count;
+                int lastRowIdx = totalRows - 1;
+                if (lastRowIdx < context.RaidColumnIdx)
                 {
-                    // If the row doesn't have enough columns, add empty cells
-                    for (int j = row.Count; j <= context.RaidColumn; j++)
+                    // If the row doesn't have enough columns, add empty cells, raidColumnIdx is 1-based
+                    
+                    // if (lastRowIdx < context.RaidColumnIdx)
+                    // {
+                    //     Console.WriteLine($"Extending row for player {player.PlayerAliases[0]} from {totalRows} to {context.RaidColumnIdx} columns.");
+                    // }
+
+                    for (int j = lastRowIdx; j < context.RaidColumnIdx; j++)
                     {
                         row.Add(string.Empty);
                     }
                 }
 
-                row[context.RaidColumn] = player.RaidEarnedDkp.ToString();
+                row[context.RaidColumnIdx] = player.RaidEarnedDkp.ToString();
             }
         }
 
-    private int FindRaidColumn(SquadSheetContext context, IList<object> headerRow)
+    private int FindRaidColumn(SquadSheetContext context, IList<object> headerRow, List<int> matchingDateColumns)
         {
             var zonesInLog = context.ZoneInfo.Select(z => z.Item2).Distinct().ToList();
-            var monthDay = context.RaidStart.ToString("M/d");
-            for (int col = 0; col < headerRow.Count; col++)
+            
+            foreach (var colIndex in matchingDateColumns)
             {
                 foreach (var zone in zonesInLog)
                 {
-                    if (!ApplicationOptions.ZoneToAbbrevLookup.TryGetValue(zone, out var abbrev))
+                    if (!_options.ZoneToAbbrevLookup.TryGetValue(zone, out var abbrev))
                     {
                         continue;
                     }
-                    var columnTitle = headerRow[col]?.ToString();
-                    if (columnTitle.Contains(abbrev, StringComparison.OrdinalIgnoreCase) && columnTitle.Contains(monthDay, StringComparison.OrdinalIgnoreCase))
+                    var columnTitle = headerRow[colIndex]?.ToString();
+                    if (columnTitle.Contains(abbrev, StringComparison.OrdinalIgnoreCase))
                     {
-                        return col;
+                        return colIndex;
                     }
                 }
-
-            }
+            }   
             return -1; // Not found
         }
     }

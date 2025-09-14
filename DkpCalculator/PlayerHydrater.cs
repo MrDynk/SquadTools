@@ -1,5 +1,10 @@
 public class PlayerHydrater
 {
+    private readonly ApplicationOptions _options;
+    public PlayerHydrater(ApplicationOptions options)
+    {
+        _options = options;
+    }
     public void PopulateSquadPlayerDetailsForRaid(SquadSheetContext context)
     {
         //Build Valid Squad Players List and associate Combatant info Timestamps
@@ -31,7 +36,7 @@ public class PlayerHydrater
                 for (int i = 1; i < times.Count; i++)
                 {
                     var diff = times[i] - times[i - 1];
-                    if (diff.TotalMinutes >= ApplicationOptions.InactivityThresholdMinutes)
+                    if (diff.TotalMinutes >= _options.InactivityThresholdMinutes)
                     {
                         //Console.WriteLine($"Player {alias} inactive from {times[i - 1]:HH:mm:ss} to {times[i]:HH:mm:ss} ({diff.TotalMinutes:F1} min)");
                         PlayerActivityGap activityGap = new PlayerActivityGap
@@ -55,13 +60,13 @@ public class PlayerHydrater
         //associate loot
         foreach (var item in context.Loot)
         {
-            //Console.WriteLine($"Time Looted: {item.TimeStamp} Player: {item.PlayerName} Item: {item.Item} Cost: Could Be Read from discord bot");
+            //Console.WriteLine($"Time Looted: {item.TimeStamp} Player: {item.PlayerName} Item: Could Be Read from discord bot");
             var player = context.SquadPlayers
                 .FirstOrDefault(p => p.PlayerAliases.Contains(item.PlayerName));
 
             if (player == null)
             {
-                Console.WriteLine($"Looted item for non squad player {item.PlayerName} Item: {item.Item} Time: {item.TimeStamp}");
+                //Console.WriteLine($"Looted item for non squad player {item.PlayerName} Item: {item.Item} Time: {item.TimeStamp}");
                 continue;
             }
             player.FatLoot.Add(item);

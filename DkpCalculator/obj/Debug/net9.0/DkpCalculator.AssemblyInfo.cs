@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("DkpCalculator")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+d91fd7b1b29eda24f73c25247b799f4f3cd9e88d")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+6effaef90bf1626eea286f79f36befa330ae36dd")]
 [assembly: System.Reflection.AssemblyProductAttribute("DkpCalculator")]
 [assembly: System.Reflection.AssemblyTitleAttribute("DkpCalculator")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
